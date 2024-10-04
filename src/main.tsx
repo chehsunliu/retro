@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 
+import { ThemeProvider } from "@/hooks/theme-provider.tsx";
 import "@/index.css";
 import App from "@/routes/app.tsx";
 import PalApp from "@/routes/pal.tsx";
@@ -31,6 +32,8 @@ const router = createHashRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <ThemeProvider>
+      <RouterProvider router={router} />
+    </ThemeProvider>
   </StrictMode>,
 );
