@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 
 import { ThemeProvider } from "@/hooks/theme-provider.tsx";
+import "@/i18n.ts";
 import "@/index.css";
 import App from "@/routes/app.tsx";
 import PalApp from "@/routes/pal.tsx";
