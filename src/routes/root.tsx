@@ -1,7 +1,6 @@
 import { Moon, Sun } from "lucide-react";
-import React from "react";
 import { useTranslation } from "react-i18next";
-import { Outlet, useNavigate, Link } from "react-router-dom";
+import { Outlet, useNavigate, Link, useLocation } from "react-router-dom";
 
 import { Icons } from "@/components/icons.tsx";
 import { Button, buttonVariants } from "@/components/ui/button.tsx";
@@ -16,17 +15,13 @@ import { useTheme } from "@/hooks/theme-provider.tsx";
 
 function Root() {
   const navigate = useNavigate();
-  const [selection, setSelection] = React.useState("");
+  const location = useLocation();
+
   const { t } = useTranslation("common");
   const { theme, setTheme } = useTheme();
 
   const handleSelectionChange = (value: string) => {
-    setSelection(value);
     navigate(value);
-  };
-
-  const handleHomeClick = () => {
-    setSelection("");
   };
 
   const toggleTheme = () => {
@@ -37,21 +32,25 @@ function Root() {
     }
   };
 
+  const games = ["swd-2e", "pal"];
+  const selectedGame = location.pathname.split("/")[1];
+
   return (
     <div>
-      <header className={"flex h-16 border-b px-36"}>
+      <header className={"flex h-16 border-b px-72"}>
         <nav className={"flex flex-row grow gap-2 items-center"}>
-          <Link onClick={handleHomeClick} to={"/"}>
-            Retro
-          </Link>
+          <Link to={"/"}>Retro</Link>
           <div className={"grow"} />
-          <Select onValueChange={handleSelectionChange} value={selection}>
+          <Select
+            onValueChange={handleSelectionChange}
+            value={games.includes(selectedGame) ? selectedGame : ""}
+          >
             <SelectTrigger className={"w-[180px]"}>
               <SelectValue placeholder="--" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="/swd-2e">{t("title.swd-2e")}</SelectItem>
-              <SelectItem value="/pal">{t("title.pal")}</SelectItem>
+              <SelectItem value={"swd-2e"}>{t("title.swd-2e")}</SelectItem>
+              <SelectItem value={"pal"}>{t("title.pal")}</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline" size="icon" onClick={toggleTheme}>
@@ -66,7 +65,7 @@ function Root() {
           </Link>
         </nav>
       </header>
-      <main className={"px-36"}>
+      <main className={"px-72 pt-6"}>
         <Outlet />
       </main>
     </div>
