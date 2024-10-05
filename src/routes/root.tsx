@@ -3,7 +3,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Outlet, useNavigate, Link } from "react-router-dom";
 
-import { Button } from "@/components/ui/button.tsx";
+import { Icons } from "@/components/icons.tsx";
+import { Button, buttonVariants } from "@/components/ui/button.tsx";
 import {
   Select,
   SelectContent,
@@ -39,7 +40,7 @@ function Root() {
   return (
     <div>
       <header className={"flex h-16 border-b px-36"}>
-        <nav className={"flex flex-row grow gap-6 items-center"}>
+        <nav className={"flex flex-row grow gap-2 items-center"}>
           <Link onClick={handleHomeClick} to={"/"}>
             Retro
           </Link>
@@ -57,9 +58,15 @@ function Root() {
             <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           </Button>
+          <Link
+            className={buttonVariants({ variant: "outline", size: "icon" })}
+            to={"https://github.com/chehsunliu/retro"}
+          >
+            <Icons.github className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
+          </Link>
         </nav>
       </header>
-      <main>
+      <main className={"px-36"}>
         <Outlet />
       </main>
     </div>
