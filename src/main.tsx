@@ -1,7 +1,8 @@
-import { StrictMode } from "react";
+import { StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 
+import { StatsProvider as Swd2eStatsProvider } from "@/features/swd-2e/stats-provider.tsx";
 import { ThemeProvider } from "@/hooks/theme-provider.tsx";
 import "@/i18n.ts";
 import "@/index.css";
@@ -13,7 +14,13 @@ import Swd2eApp from "@/routes/swd-2e.tsx";
 const router = createHashRouter([
   {
     path: "/",
-    element: <Root />,
+    element: (
+      <Suspense fallback={<p>loading...</p>}>
+        <Swd2eStatsProvider>
+          <Root />
+        </Swd2eStatsProvider>
+      </Suspense>
+    ),
     children: [
       {
         path: "",

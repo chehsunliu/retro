@@ -1,0 +1,28 @@
+{
+  "money": "金錢",
+  "names": {
+    "fu": "輔子徹",
+    "wood": "機關人",
+    "stone": "鑄石子",
+    "sang": "桑紋錦"
+  },
+  "attrs": {
+    "level": "等級",
+    "xp": "經驗",
+    "xpMax": "最大經驗",
+    "hp": "生命",
+    "hpMax": "最大生命",
+    "pp": "體力",
+    "ppMax": "最大體力",
+    "mp": "仙術",
+    "mpMax": "最大仙術",
+    "power": "力量",
+    "wisdom": "智慧",
+    "speed": "敏捷",
+    "luck": "運氣",
+    "response": "反應力",
+    "offense": "戰鬥力",
+    "defense": "防禦力",
+    "dodge": "閃躲率"
+  }
+}

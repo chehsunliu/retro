@@ -4,13 +4,7 @@ import { Outlet, useNavigate, Link, useLocation } from "react-router-dom";
 
 import { Icons } from "@/components/icons.tsx";
 import { Button, buttonVariants } from "@/components/ui/button.tsx";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTheme } from "@/hooks/theme-provider.tsx";
 
 function Root() {
@@ -41,10 +35,7 @@ function Root() {
         <nav className={"flex flex-row grow gap-2 items-center"}>
           <Link to={"/"}>Retro</Link>
           <div className={"grow"} />
-          <Select
-            onValueChange={handleSelectionChange}
-            value={games.includes(selectedGame) ? selectedGame : ""}
-          >
+          <Select onValueChange={handleSelectionChange} value={games.includes(selectedGame) ? selectedGame : ""}>
             <SelectTrigger className={"w-[180px]"}>
               <SelectValue placeholder="--" />
             </SelectTrigger>

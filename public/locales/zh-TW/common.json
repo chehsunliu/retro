@@ -4,7 +4,8 @@
     "swd-2e": "軒轅劍外傳 - 楓之舞"
   },
   "subtitle": {
-    "general": "一般"
+    "general": "一般",
+    "character": "角色"
   },
   "action": {
     "import": "輸入",
