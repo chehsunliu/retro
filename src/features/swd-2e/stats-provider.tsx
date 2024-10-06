@@ -81,15 +81,13 @@ type Character = {
   };
 };
 
-type Stats = {
-  bufIn: ArrayBuffer;
-  bufOut: DataView;
-  money: number;
-  chars: Record<string, Character>;
-};
-
 type StatsContextType = {
-  stats: Stats;
+  stats: {
+    bufIn: ArrayBuffer;
+    bufOut: DataView;
+    money: number;
+    chars: Record<string, Character>;
+  };
   setBufIn: (buf: ArrayBuffer) => void;
   setMoney: (money: number) => void;
   setAttr: (id: string, attr: { key: AttrKey; value: number }) => void;
@@ -119,7 +117,7 @@ const initialCharacter: Character = {
   },
 };
 
-const initialStats: Stats = {
+const initialStats: StatsContextType["stats"] = {
   bufIn: new ArrayBuffer(0),
   bufOut: new DataView(new ArrayBuffer(0)),
   money: 0,
@@ -143,7 +141,7 @@ type StatsProviderProps = {
 };
 
 export function StatsProvider({ children, ...props }: StatsProviderProps) {
-  const [stats, setStats] = useState<Stats>(initialStats);
+  const [stats, setStats] = useState<StatsContextType["stats"]>(initialStats);
 
   const setBufIn = (buf: ArrayBuffer) => {
     const bufOut = new DataView(buf.slice(0));
