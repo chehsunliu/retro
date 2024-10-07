@@ -15,7 +15,7 @@ function GeneralSection() {
   return (
     <>
       <H2>{t("subtitle.general")}</H2>
-      <div>
+      <div className={"w-20"}>
         <Label htmlFor={"money"}>{t2("money")}</Label>
         <Input id={"money"} value={stats.money} onChange={(e) => setMoney(parseInt(e.target.value, 10))} />
       </div>
@@ -30,7 +30,7 @@ function CharacterSection() {
   return (
     <>
       <H2>{t("subtitle.character")}</H2>
-      {characterBlocks}
+      <div className={"grid xl:grid-cols-3 lg:grid-cols-2 md:grid-cols-1 sm:grid-cols-1 gap-4"}>{characterBlocks}</div>
     </>
   );
 }
@@ -44,14 +44,14 @@ function Swd2eApp() {
   };
 
   return (
-    <>
+    <div className={"space-y-8"}>
       <div className={"flex flex-row justify-between items-end"}>
         <H1>{t("title.swd-2e")}</H1>
         <ActionButtons onImport={handleImport} exportedBuffer={stats.bufOut.buffer} />
       </div>
       <GeneralSection />
       <CharacterSection />
-    </>
+    </div>
   );
 }
 

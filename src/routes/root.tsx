@@ -31,7 +31,7 @@ function Root() {
 
   return (
     <div>
-      <header className={"flex h-16 border-b px-72"}>
+      <header className={"flex h-16 border-b px-48"}>
         <nav className={"flex flex-row grow gap-2 items-center"}>
           <Link to={"/"}>Retro</Link>
           <div className={"grow"} />
@@ -56,7 +56,7 @@ function Root() {
           </Link>
         </nav>
       </header>
-      <main className={"px-72 pt-6"}>
+      <main className={"px-48 py-6"}>
         <Outlet />
       </main>
     </div>

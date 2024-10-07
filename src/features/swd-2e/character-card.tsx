@@ -22,11 +22,11 @@ function CharacterCard({ id }: Props) {
   ));
 
   return (
-    <Card>
+    <Card className={"w-full"}>
       <CardHeader>
         <CardTitle>{t(`names.${id}`)}</CardTitle>
       </CardHeader>
-      <CardContent>{items}</CardContent>
+      <CardContent className={"grid grid-flow-row-dense grid-cols-5 gap-3"}>{items}</CardContent>
     </Card>
   );
 }
