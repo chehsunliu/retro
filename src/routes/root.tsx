@@ -1,4 +1,5 @@
 import { Moon, Sun } from "lucide-react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Outlet, useNavigate, Link, useLocation } from "react-router-dom";
 
@@ -28,6 +29,14 @@ function Root() {
 
   const games = ["swd-2e", "pal"];
   const selectedGame = location.pathname.split("/")[1];
+
+  useEffect(() => {
+    if (games.includes(selectedGame)) {
+      document.title = t(`title.${selectedGame}`);
+    } else {
+      document.title = "Retro";
+    }
+  });
 
   return (
     <div>
