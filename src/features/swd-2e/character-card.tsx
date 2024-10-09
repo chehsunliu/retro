@@ -68,6 +68,8 @@ function CharacterCard({ id }: Props) {
         <div>
           <CardTitle className={"text-lg"}>{t("subtitle.abilities")}</CardTitle>
           <Select
+            className="my-react-select-container"
+            classNamePrefix="my-react-select"
             isMulti
             options={abilityOptions}
             value={abilities}
