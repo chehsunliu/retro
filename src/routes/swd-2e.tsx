@@ -38,7 +38,7 @@ function CharacterSection() {
 
 function Swd2eApp() {
   const { t } = useTranslation("common");
-  const { setBufIn, getModifiedBuffer } = useStats();
+  const { stats, setBufIn, getModifiedBuffer } = useStats();
 
   const handleImport = (buffer: ArrayBuffer) => {
     setBufIn(buffer);
@@ -48,11 +48,15 @@ function Swd2eApp() {
     return getModifiedBuffer();
   };
 
+  const handleReset = () => {
+    setBufIn(stats.bufIn);
+  };
+
   return (
     <div className={"space-y-8"}>
       <div className={"flex flex-row justify-between items-end"}>
         <H1>{t("title.swd-2e")}</H1>
-        <ActionButtons onImport={handleImport} onExport={handleExport} />
+        <ActionButtons onImport={handleImport} onExport={handleExport} onReset={handleReset} />
       </div>
       <GeneralSection />
       <CharacterSection />

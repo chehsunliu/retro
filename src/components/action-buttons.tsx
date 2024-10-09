@@ -8,9 +8,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 type ActionButtonsProps = {
   onImport?: (buffer: ArrayBuffer) => void;
   onExport?: () => ArrayBuffer;
+  onReset?: () => void;
 };
 
-function ActionButtons({ onImport, onExport }: ActionButtonsProps) {
+function ActionButtons({ onImport, onExport, onReset }: ActionButtonsProps) {
   const { t } = useTranslation("common");
   const [importedFilename, setImportedFilename] = useState("");
 
@@ -84,7 +85,7 @@ function ActionButtons({ onImport, onExport }: ActionButtonsProps) {
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant={"ghost"}>
+            <Button variant={"ghost"} onClick={onReset}>
               <RotateCcw className={"h-[1.2rem] w-[1.2rem]"} />
             </Button>
           </TooltipTrigger>
