@@ -9,7 +9,7 @@ import { Button, buttonVariants } from "@/components/ui/button.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTheme } from "@/hooks/theme-provider.tsx";
 
-const games = ["swd-2e", "pal"];
+const games = ["swd-2e", "pal", "pal-new"];
 
 function Root() {
   const navigate = useNavigate();
@@ -59,7 +59,8 @@ function Root() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={"swd-2e"}>{t("title.swd-2e")}</SelectItem>
-              <SelectItem value={"pal"}>{t("title.pal")}</SelectItem>
+              {/*<SelectItem value={"pal"}>{t("title.pal")}</SelectItem>*/}
+              <SelectItem value={"pal-new"}>{t("title.pal-new")}</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline" size="icon" onClick={toggleTheme}>
