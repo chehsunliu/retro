@@ -9,6 +9,8 @@ import { Button, buttonVariants } from "@/components/ui/button.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTheme } from "@/hooks/theme-provider.tsx";
 
+const games = ["swd-2e", "pal"];
+
 function Root() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -28,16 +30,18 @@ function Root() {
     }
   };
 
-  const games = ["swd-2e", "pal"];
   const selectedGame = location.pathname.split("/")[1];
 
   useEffect(() => {
-    if (games.includes(selectedGame)) {
-      document.title = t(`title.${selectedGame}`);
-    } else {
-      document.title = "Retro";
-    }
-  });
+    const title = games.includes(selectedGame) ? t(`title.${selectedGame}`) : "Retro";
+    document.title = title;
+
+    // https://stackoverflow.com/a/63249329/876595
+    window.gtag("event", "page_view", {
+      page_title: title,
+      page_path: location.pathname + location.search,
+    });
+  }, [t, selectedGame, location]);
 
   // This variable will be replaced statically: https://v2.vitejs.dev/guide/env-and-mode.html#production-replacement.
   const version = import.meta.env.VITE_RETRO_VERSION;
