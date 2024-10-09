@@ -37,7 +37,7 @@ jobs:
         run: npm install
 
       - name: Build
-        run: npm run build -- --base=/retro
+        run: npm run build
         env:
           VITE_RETRO_VERSION: ${{ steps.ref-selector.outputs.ref }}
 
@@ -63,7 +63,7 @@ jobs:
         run: |
           sha=${{ github.sha }}
           export VITE_RETRO_VERSION=${sha::7}
-          npm run build -- --base=/retro/preview
+          npm run build -- --base=/preview
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -84,6 +84,9 @@ jobs:
         with:
           name: build-preview
           path: ./dist/preview
+
+      - name: Set up custom domain
+        run: echo "retro.chehsunliu.dev" > ./dist/CNAME
 
       - name: Debug
         run: tree .
