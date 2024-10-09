@@ -1,6 +1,10 @@
 name: Deploy
 
 on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -56,9 +60,10 @@ jobs:
         run: npm install
 
       - name: Build
-        run: npm run build -- --base=/retro/preview
-        env:
-          VITE_RETRO_VERSION: ${{ github.sha }}
+        run: |
+          sha=${{ github.sha }}
+          export VITE_RETRO_VERSION=${sha::7}
+          npm run build -- --base=/retro/preview
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
