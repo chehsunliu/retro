@@ -4,6 +4,10 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      overwrite-production:
+        type: boolean
+        required: false
 
 jobs:
   build:
@@ -14,6 +18,11 @@ jobs:
       - name: Select ref
         id: ref-selector
         run: |
+          if [[ '${{ inputs.overwrite-production }}' == "true" ]]; then
+            echo 'ref=${{ github.sha }}' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          
           ref=$(gh release list --json name --exclude-drafts --exclude-pre-releases --limit 1 | jq -r '.[].name')
           if [[ -z "$ref" ]]; then
             echo "ref=main" >> "$GITHUB_OUTPUT"
