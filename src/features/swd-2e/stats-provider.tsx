@@ -33,12 +33,14 @@ export const attrKeys = [
 
 type AttrKey = (typeof attrKeys)[number];
 
+const abilityFieldCount = 50;
+
 const addresses = {
   money: 0x011b,
   mutableInventory: { start: 0x03a3, end: 0x03fd },
 };
 
-const attrAddresses: { [k in AttrKey]: number } = {
+const attrAddressOffsets: { [k in AttrKey]: number } = {
   offense: -0x21,
   defense: -0x1f,
   hp: 0x00,
@@ -57,6 +59,8 @@ const attrAddresses: { [k in AttrKey]: number } = {
   response: 0x30,
   dodge: 0x38,
 };
+
+const abilityAddressOffset = 0x40;
 
 type Character = {
   attrs: {
@@ -80,6 +84,7 @@ type Character = {
     defense: number;
     dodge: number;
   };
+  abilities: number[];
 };
 
 type StatsContextType = {
@@ -93,7 +98,9 @@ type StatsContextType = {
   setBufIn(buf: ArrayBuffer): void;
   setMoney(money: number): void;
   setAttr(id: string, attr: { key: AttrKey; value: number }): void;
-  appendInventoryItem(addr: number): void;
+  appendAbility(id: string, value: number): void;
+  removeAbility(id: string, value: number): void;
+  appendInventoryItem(value: number): void;
   removeInventoryItem(index: number): void;
 };
 
@@ -119,6 +126,7 @@ const initialCharacter: Character = {
     defense: 0,
     dodge: 0,
   },
+  abilities: [],
 };
 
 const initialStats: StatsContextType["stats"] = {
@@ -141,6 +149,8 @@ const StatsContext = createContext<StatsContextType>({
   setAttr: () => {},
   appendInventoryItem: () => {},
   removeInventoryItem: () => {},
+  appendAbility: () => {},
+  removeAbility: () => {},
 });
 
 type StatsProviderProps = {
@@ -160,9 +170,13 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
         characterIds.map((id) => {
           const addr = characterAddresses[id];
           const attrs = Object.fromEntries(
-            attrKeys.map((key) => [key, bufOut.getUint16(addr + attrAddresses[key], true)]),
+            attrKeys.map((key) => [key, bufOut.getUint16(addr + attrAddressOffsets[key], true)]),
           ) as { [k in AttrKey]: number };
-          return [id, { attrs }];
+          const abilities = [...Array(abilityFieldCount).keys()]
+            .map((offset) => bufOut.getUint8(addr + abilityAddressOffset + offset))
+            .filter((value) => value > 0);
+
+          return [id, { attrs, abilities }];
         }),
       ),
       inventory: Array.from(
@@ -183,7 +197,7 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
 
   const setAttr = (id: string, attr: { key: AttrKey; value: number }) => {
     const addr = characterAddresses[id];
-    bufOut.setUint16(addr + attrAddresses[attr.key], attr.value, true);
+    bufOut.setUint16(addr + attrAddressOffsets[attr.key], attr.value, true);
     setStats({
       ...stats,
       bufOut,
@@ -195,6 +209,23 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
         },
       },
     });
+  };
+
+  const appendAbility = (id: string, value: number) => {
+    const addr = characterAddresses[id];
+    const abilities = [...stats.chars[id].abilities, value];
+    bufOut.setUint8(addr + abilityAddressOffset + abilities.length - 1, value);
+    setStats({ ...stats, bufOut, chars: { ...stats.chars, [id]: { ...stats.chars[id], abilities } } });
+  };
+
+  const removeAbility = (id: string, value: number) => {
+    const addr = characterAddresses[id];
+    const abilities = stats.chars[id].abilities.filter((a) => a !== value);
+    for (let i = 0; i < abilities.length; i++) {
+      bufOut.setUint8(addr + abilityAddressOffset + i, abilities[i]);
+    }
+    bufOut.setUint8(addr + abilityAddressOffset + abilities.length, 0);
+    setStats({ ...stats, bufOut, chars: { ...stats.chars, [id]: { ...stats.chars[id], abilities } } });
   };
 
   const appendInventoryItem = (itemValue: number) => {
@@ -227,6 +258,8 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     setBufIn,
     setMoney,
     setAttr,
+    appendAbility,
+    removeAbility,
     appendInventoryItem,
     removeInventoryItem,
   };
