@@ -15,7 +15,7 @@ function CharacterCard({ id }: Props) {
   const char = stats.chars[id];
 
   const items = attrKeys.map((key) => (
-    <div>
+    <div key={key}>
       <Label>{t(`attrs.${key}`)}</Label>
       <Input value={char.attrs[key]} onChange={(e) => setAttr(id, { key, value: parseInt(e.target.value, 10) })} />
     </div>

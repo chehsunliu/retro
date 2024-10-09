@@ -5,7 +5,8 @@
   },
   "subtitle": {
     "general": "一般",
-    "character": "角色"
+    "character": "角色",
+    "inventory": "物品"
   },
   "action": {
     "import": "輸入",

@@ -35,6 +35,7 @@ type AttrKey = (typeof attrKeys)[number];
 
 const addresses = {
   money: 0x011b,
+  mutableInventory: { start: 0x03a3, end: 0x03fd },
 };
 
 const attrAddresses: { [k in AttrKey]: number } = {
@@ -87,10 +88,13 @@ type StatsContextType = {
     bufOut: DataView;
     money: number;
     chars: Record<string, Character>;
+    inventory: number[];
   };
-  setBufIn: (buf: ArrayBuffer) => void;
-  setMoney: (money: number) => void;
-  setAttr: (id: string, attr: { key: AttrKey; value: number }) => void;
+  setBufIn(buf: ArrayBuffer): void;
+  setMoney(money: number): void;
+  setAttr(id: string, attr: { key: AttrKey; value: number }): void;
+  appendInventoryItem(addr: number): void;
+  removeInventoryItem(index: number): void;
 };
 
 const initialCharacter: Character = {
@@ -127,6 +131,7 @@ const initialStats: StatsContextType["stats"] = {
     wood: initialCharacter,
     stone: initialCharacter,
   },
+  inventory: [],
 };
 
 const StatsContext = createContext<StatsContextType>({
@@ -134,6 +139,8 @@ const StatsContext = createContext<StatsContextType>({
   setBufIn: () => {},
   setMoney: () => {},
   setAttr: () => {},
+  appendInventoryItem: () => {},
+  removeInventoryItem: () => {},
 });
 
 type StatsProviderProps = {
@@ -158,6 +165,12 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
           return [id, { attrs }];
         }),
       ),
+      inventory: Array.from(
+        { length: (addresses.mutableInventory.end - addresses.mutableInventory.start) / 2 },
+        (_, i) => i * 2 + addresses.mutableInventory.start,
+      )
+        .map((addr) => bufOut.getUint16(addr, true))
+        .filter((value) => value > 0),
     });
   };
 
@@ -184,11 +197,38 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     });
   };
 
+  const appendInventoryItem = (itemValue: number) => {
+    if (addresses.mutableInventory.start + stats.inventory.length * 2 >= addresses.mutableInventory.end) {
+      return;
+    }
+
+    for (let i = 0; i < stats.inventory.length; i++) {
+      bufOut.setUint16(addresses.mutableInventory.start + i * 2, stats.inventory[i], true);
+    }
+    bufOut.setUint16(addresses.mutableInventory.start + stats.inventory.length * 2, itemValue, true);
+
+    setStats({ ...stats, bufOut, inventory: [...stats.inventory, itemValue] });
+  };
+
+  const removeInventoryItem = (index: number) => {
+    const inventory = [...stats.inventory.slice(0, index), ...stats.inventory.slice(index + 1)];
+    for (let addr = addresses.mutableInventory.start; addr < addresses.mutableInventory.end; addr += 2) {
+      bufOut.setUint16(addr, 0, true);
+    }
+    for (let i = 0; i < inventory.length; i++) {
+      bufOut.setUint16(addresses.mutableInventory.start + i * 2, inventory[i], true);
+    }
+
+    setStats({ ...stats, bufOut, inventory });
+  };
+
   const value: StatsContextType = {
     stats,
     setBufIn,
     setMoney,
     setAttr,
+    appendInventoryItem,
+    removeInventoryItem,
   };
 
   return (

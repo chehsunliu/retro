@@ -5,6 +5,7 @@ import { H1, H2 } from "@/components/typography.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import CharacterCard from "@/features/swd-2e/character-card.tsx";
+import InventorySection from "@/features/swd-2e/inventory.tsx";
 import { characterIds, useStats } from "@/features/swd-2e/stats-provider.tsx";
 
 function GeneralSection() {
@@ -51,6 +52,7 @@ function Swd2eApp() {
       </div>
       <GeneralSection />
       <CharacterSection />
+      <InventorySection />
     </div>
   );
 }
