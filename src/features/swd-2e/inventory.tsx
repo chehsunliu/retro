@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 
 import { H2 } from "@/components/typography.tsx";
+import { Button } from "@/components/ui/button";
 import { useStats } from "@/features/swd-2e/stats-provider.tsx";
 import { cn } from "@/lib/utils.ts";
 
@@ -40,9 +41,9 @@ function Inventory() {
   };
 
   const items = stats.inventory.map((value, index) => (
-    <span key={index} onClick={handleClick(index)}>
+    <Button key={index} variant={"ghost"} onClick={handleClick(index)}>
       {t2(`inventory.0x${value.toString(16).padStart(4, "0")}`)}
-    </span>
+    </Button>
   ));
 
   return (
@@ -66,9 +67,9 @@ function AvailableItems() {
   };
 
   const items = itemValues.map((value) => (
-    <span key={value} onClick={handleClick(value)}>
+    <Button key={value} variant={"ghost"} onClick={handleClick(value)}>
       {t2(`inventory.0x${value.toString(16).padStart(4, "0")}`)}
-    </span>
+    </Button>
   ));
 
   return <div className={"overflow-y-auto h-64 grid grid-cols-6 gap-4"}>{items}</div>;
@@ -83,9 +84,9 @@ function AvailableMonsters() {
   };
 
   const items = monsterValues.map((value) => (
-    <span key={value} onClick={handleClick(value)}>
+    <Button key={value} variant={"ghost"} onClick={handleClick(value)}>
       {t2(`inventory.0x${value.toString(16).padStart(4, "0")}`)}
-    </span>
+    </Button>
   ));
 
   return <div className={"overflow-y-auto h-64 grid grid-cols-6 gap-4"}>{items}</div>;
