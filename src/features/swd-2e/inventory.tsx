@@ -49,7 +49,7 @@ function Inventory() {
   return (
     <div
       className={cn(
-        "grid grid-cols-6 gap-4 border-2 p-3 min-h-36",
+        "grid grid-cols-8 gap-4 border-2 p-3 min-h-36",
         stats.inventory.length === 45 ? "border-yellow-400" : "",
       )}
     >
