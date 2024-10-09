@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import { H2 } from "@/components/typography.tsx";
 import { useStats } from "@/features/swd-2e/stats-provider.tsx";
+import { cn } from "@/lib/utils.ts";
 
 const itemValueRanges = [
   [0x0001, 0x003a],
@@ -44,7 +45,16 @@ function Inventory() {
     </span>
   ));
 
-  return <div className={"grid grid-cols-6 gap-4"}>{items}</div>;
+  return (
+    <div
+      className={cn(
+        "grid grid-cols-6 gap-4 border-2 p-3 min-h-36",
+        stats.inventory.length === 45 ? "border-yellow-400" : "",
+      )}
+    >
+      {items}
+    </div>
+  );
 }
 
 function AvailableItems() {
@@ -88,9 +98,7 @@ function InventorySection() {
     <>
       <H2>{t("subtitle.inventory")}</H2>
       <div className={"flex flex-col space-x-4"}>
-        <div className={"p-3 border-2 min-h-36"}>
-          <Inventory />
-        </div>
+        <Inventory />
         <div className={"flex flex-row space-x-3 p-3"}>
           <div className={"flex-auto"}>
             <AvailableItems />
