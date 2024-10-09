@@ -34,6 +34,8 @@ jobs:
 
       - name: Build
         run: npm run build -- --base=/retro
+        env:
+          VITE_RETRO_VERSION: ${{ steps.ref-selector.outputs.ref }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -55,6 +57,8 @@ jobs:
 
       - name: Build
         run: npm run build -- --base=/retro/preview
+        env:
+          VITE_RETRO_VERSION: ${{ github.sha }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
