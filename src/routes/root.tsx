@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Outlet, useNavigate, Link, useLocation } from "react-router-dom";
 
 import { Icons } from "@/components/icons.tsx";
+import { Badge } from "@/components/ui/badge.tsx";
 import { Button, buttonVariants } from "@/components/ui/button.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTheme } from "@/hooks/theme-provider.tsx";
@@ -38,11 +39,15 @@ function Root() {
     }
   });
 
+  // This variable will be replaced statically: https://v2.vitejs.dev/guide/env-and-mode.html#production-replacement.
+  const version = import.meta.env.VITE_RETRO_VERSION;
+  const badge = (version?.length ?? 0) > 0 ? <Badge variant="secondary">{version}</Badge> : null;
+
   return (
     <div>
       <header className={"flex h-16 border-b px-48"}>
         <nav className={"flex flex-row grow gap-2 items-center"}>
-          <Link to={"/"}>Retro</Link>
+          <Link to={"/"}>Retro {badge}</Link>
           <div className={"grow"} />
           <Select onValueChange={handleSelectionChange} value={games.includes(selectedGame) ? selectedGame : ""}>
             <SelectTrigger className={"w-[180px]"}>

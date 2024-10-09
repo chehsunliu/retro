@@ -1,10 +1,53 @@
 name: Deploy
 
 on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select ref
+        id: ref-selector
+        run: |
+          ref=$(gh release list --json name --exclude-drafts --exclude-pre-releases --limit 1 | jq -r '.[].name')
+          if [[ -z "$ref" ]]; then
+            echo "ref=main" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ref-selector.outputs.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build -- --base=/retro
+        env:
+          VITE_RETRO_VERSION: ${{ steps.ref-selector.outputs.ref }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: ./dist
+
+  build-preview:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,7 +61,32 @@ jobs:
 
       - name: Build
         run: |
-          npm run build -- --base=/retro
+          sha=${{ github.sha }}
+          export VITE_RETRO_VERSION=${sha::7}
+          npm run build -- --base=/retro/preview
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-preview
+          path: ./dist
+
+  merge-builds:
+    needs: [build, build-preview]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: ./dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-preview
+          path: ./dist/preview
+
+      - name: Debug
+        run: tree .
 
       - name: Upload artifacts
         uses: actions/upload-pages-artifact@v3
@@ -26,7 +94,7 @@ jobs:
           path: "dist"
 
   deploy:
-    needs: build
+    needs: merge-builds
     runs-on: ubuntu-latest
     permissions:
       pages: write
