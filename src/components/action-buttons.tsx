@@ -17,6 +17,7 @@ function ActionButtons({ onImport, onExport, onReset }: ActionButtonsProps) {
 
   const hiddenFileInput = useRef<HTMLInputElement>(null);
   const handleImportClick = () => {
+    window.gtag("event", "retro_import", { page_title: document.title });
     hiddenFileInput.current?.click();
   };
   const handleImport = (e: ChangeEvent<HTMLInputElement>) => {
@@ -47,6 +48,8 @@ function ActionButtons({ onImport, onExport, onReset }: ActionButtonsProps) {
   };
 
   const handleExport = () => {
+    window.gtag("event", "retro_export", { page_title: document.title });
+
     const buf = onExport?.();
     if (buf === undefined) {
       return;
