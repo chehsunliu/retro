@@ -7,10 +7,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 type ActionButtonsProps = {
   onImport?: (buffer: ArrayBuffer) => void;
-  exportedBuffer?: ArrayBuffer;
+  onExport?: () => ArrayBuffer;
 };
 
-function ActionButtons({ onImport, exportedBuffer }: ActionButtonsProps) {
+function ActionButtons({ onImport, onExport }: ActionButtonsProps) {
   const { t } = useTranslation("common");
   const [importedFilename, setImportedFilename] = useState("");
 
@@ -46,11 +46,12 @@ function ActionButtons({ onImport, exportedBuffer }: ActionButtonsProps) {
   };
 
   const handleExport = () => {
-    if (exportedBuffer === undefined) {
+    const buf = onExport?.();
+    if (buf === undefined) {
       return;
     }
 
-    const href = URL.createObjectURL(new Blob([exportedBuffer]));
+    const href = URL.createObjectURL(new Blob([buf]));
     const link = document.createElement("a");
     link.href = href;
     link.download = importedFilename || "unknown.save";
@@ -73,11 +74,7 @@ function ActionButtons({ onImport, exportedBuffer }: ActionButtonsProps) {
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant={"ghost"}
-              disabled={exportedBuffer === undefined || exportedBuffer.byteLength === 0}
-              onClick={handleExport}
-            >
+            <Button variant={"ghost"} disabled={importedFilename.length === 0} onClick={handleExport}>
               <Download className={"h-[1.2rem] w-[1.2rem]"} />
             </Button>
           </TooltipTrigger>

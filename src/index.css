@@ -113,7 +113,7 @@
   }
 
   .my-react-select-container .my-react-select__multi-value__remove .css-tj5bde-Svg {
-    @apply text-neutral-100 dark:text-neutral-400;
+    @apply text-neutral-400 dark:text-neutral-400;
   }
 
   /* Clear and dropdown indicator */

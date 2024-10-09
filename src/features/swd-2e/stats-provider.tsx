@@ -90,12 +90,12 @@ type Character = {
 type StatsContextType = {
   stats: {
     bufIn: ArrayBuffer;
-    bufOut: DataView;
     money: number;
     chars: Record<string, Character>;
     inventory: number[];
   };
   setBufIn(buf: ArrayBuffer): void;
+  getModifiedBuffer(): ArrayBuffer;
   setMoney(money: number): void;
   setAttr(id: string, attr: { key: AttrKey; value: number }): void;
   appendAbility(id: string, value: number): void;
@@ -131,7 +131,6 @@ const initialCharacter: Character = {
 
 const initialStats: StatsContextType["stats"] = {
   bufIn: new ArrayBuffer(0),
-  bufOut: new DataView(new ArrayBuffer(0)),
   money: 0,
   chars: {
     fu: initialCharacter,
@@ -145,6 +144,7 @@ const initialStats: StatsContextType["stats"] = {
 const StatsContext = createContext<StatsContextType>({
   stats: initialStats,
   setBufIn: () => {},
+  getModifiedBuffer: () => new ArrayBuffer(0),
   setMoney: () => {},
   setAttr: () => {},
   appendInventoryItem: () => {},
@@ -161,19 +161,18 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
   const [stats, setStats] = useState<StatsContextType["stats"]>(initialStats);
 
   const setBufIn = (buf: ArrayBuffer) => {
-    const bufOut = new DataView(buf.slice(0));
+    const bufViewer = new DataView(buf.slice(0));
     setStats({
-      bufIn: buf,
-      bufOut,
-      money: bufOut.getUint16(addresses.money, true),
+      bufIn: bufViewer.buffer,
+      money: bufViewer.getUint16(addresses.money, true),
       chars: Object.fromEntries(
         characterIds.map((id) => {
           const addr = characterAddresses[id];
           const attrs = Object.fromEntries(
-            attrKeys.map((key) => [key, bufOut.getUint16(addr + attrAddressOffsets[key], true)]),
+            attrKeys.map((key) => [key, bufViewer.getUint16(addr + attrAddressOffsets[key], true)]),
           ) as { [k in AttrKey]: number };
           const abilities = [...Array(abilityFieldCount).keys()]
-            .map((offset) => bufOut.getUint8(addr + abilityAddressOffset + offset))
+            .map((offset) => bufViewer.getUint8(addr + abilityAddressOffset + offset))
             .filter((value) => value > 0);
 
           return [id, { attrs, abilities }];
@@ -183,24 +182,53 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
         { length: (addresses.mutableInventory.end - addresses.mutableInventory.start) / 2 },
         (_, i) => i * 2 + addresses.mutableInventory.start,
       )
-        .map((addr) => bufOut.getUint16(addr, true))
+        .map((addr) => bufViewer.getUint16(addr, true))
         .filter((value) => value > 0),
     });
   };
 
-  const bufOut = new DataView(stats.bufOut.buffer.slice(0));
+  const getModifiedBuffer = (): ArrayBuffer => {
+    const bufOut = new DataView(stats.bufIn.slice(0));
+
+    // Money
+    bufOut.setUint16(addresses.money, stats.money, true);
+
+    // Character
+    Object.entries(stats.chars).forEach(([id, char]) => {
+      const addr = characterAddresses[id];
+
+      // Stats
+      Object.entries(char.attrs).forEach(([attrKey, attrValue]) => {
+        bufOut.setUint16(addr + attrAddressOffsets[attrKey as AttrKey], attrValue, true);
+      });
+
+      // Abilities
+      for (let i = 0; i < abilityFieldCount; i++) {
+        bufOut.setUint8(addr + abilityAddressOffset + i, 0);
+      }
+      char.abilities.forEach((a, i) => {
+        bufOut.setUint8(addr + abilityAddressOffset + i, a);
+      });
+    });
+
+    // Inventory
+    for (let addr = addresses.mutableInventory.start; addr < addresses.mutableInventory.end; addr += 2) {
+      bufOut.setUint16(addr, 0, true);
+    }
+    for (let i = 0; i < stats.inventory.length; i++) {
+      bufOut.setUint16(addresses.mutableInventory.start + i * 2, stats.inventory[i], true);
+    }
+
+    return bufOut.buffer;
+  };
 
   const setMoney = (money: number) => {
-    bufOut.setUint16(addresses.money, money, true);
-    setStats({ ...stats, bufOut, money });
+    setStats({ ...stats, money });
   };
 
   const setAttr = (id: string, attr: { key: AttrKey; value: number }) => {
-    const addr = characterAddresses[id];
-    bufOut.setUint16(addr + attrAddressOffsets[attr.key], attr.value, true);
     setStats({
       ...stats,
-      bufOut,
       chars: {
         ...stats.chars,
         [id]: {
@@ -212,20 +240,13 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
   };
 
   const appendAbility = (id: string, value: number) => {
-    const addr = characterAddresses[id];
     const abilities = [...stats.chars[id].abilities, value];
-    bufOut.setUint8(addr + abilityAddressOffset + abilities.length - 1, value);
-    setStats({ ...stats, bufOut, chars: { ...stats.chars, [id]: { ...stats.chars[id], abilities } } });
+    setStats({ ...stats, chars: { ...stats.chars, [id]: { ...stats.chars[id], abilities } } });
   };
 
   const removeAbility = (id: string, value: number) => {
-    const addr = characterAddresses[id];
     const abilities = stats.chars[id].abilities.filter((a) => a !== value);
-    for (let i = 0; i < abilities.length; i++) {
-      bufOut.setUint8(addr + abilityAddressOffset + i, abilities[i]);
-    }
-    bufOut.setUint8(addr + abilityAddressOffset + abilities.length, 0);
-    setStats({ ...stats, bufOut, chars: { ...stats.chars, [id]: { ...stats.chars[id], abilities } } });
+    setStats({ ...stats, chars: { ...stats.chars, [id]: { ...stats.chars[id], abilities } } });
   };
 
   const appendInventoryItem = (itemValue: number) => {
@@ -233,29 +254,18 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
       return;
     }
 
-    for (let i = 0; i < stats.inventory.length; i++) {
-      bufOut.setUint16(addresses.mutableInventory.start + i * 2, stats.inventory[i], true);
-    }
-    bufOut.setUint16(addresses.mutableInventory.start + stats.inventory.length * 2, itemValue, true);
-
-    setStats({ ...stats, bufOut, inventory: [...stats.inventory, itemValue] });
+    setStats({ ...stats, inventory: [...stats.inventory, itemValue] });
   };
 
   const removeInventoryItem = (index: number) => {
     const inventory = [...stats.inventory.slice(0, index), ...stats.inventory.slice(index + 1)];
-    for (let addr = addresses.mutableInventory.start; addr < addresses.mutableInventory.end; addr += 2) {
-      bufOut.setUint16(addr, 0, true);
-    }
-    for (let i = 0; i < inventory.length; i++) {
-      bufOut.setUint16(addresses.mutableInventory.start + i * 2, inventory[i], true);
-    }
-
-    setStats({ ...stats, bufOut, inventory });
+    setStats({ ...stats, inventory });
   };
 
   const value: StatsContextType = {
     stats,
     setBufIn,
+    getModifiedBuffer,
     setMoney,
     setAttr,
     appendAbility,
