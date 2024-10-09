@@ -49,7 +49,6 @@ function ActionButtons({ onImport, onExport, onReset }: ActionButtonsProps) {
 
   const handleExport = () => {
     window.gtag("event", "retro_export", { page_title: document.title });
-
     const buf = onExport?.();
     if (buf === undefined) {
       return;
@@ -60,6 +59,11 @@ function ActionButtons({ onImport, onExport, onReset }: ActionButtonsProps) {
     link.href = href;
     link.download = importedFilename || "unknown.save";
     link.click();
+  };
+
+  const handleReset = () => {
+    window.gtag("event", "retro_reset", { page_title: document.title });
+    onReset?.();
   };
 
   return (
@@ -88,7 +92,7 @@ function ActionButtons({ onImport, onExport, onReset }: ActionButtonsProps) {
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant={"ghost"} onClick={onReset}>
+            <Button variant={"ghost"} onClick={handleReset}>
               <RotateCcw className={"h-[1.2rem] w-[1.2rem]"} />
             </Button>
           </TooltipTrigger>
