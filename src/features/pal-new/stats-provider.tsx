@@ -11,23 +11,99 @@ const characterAddresses: Record<string, number> = {
 
 export const characterIds: string[] = Object.keys(characterAddresses);
 
+export const attrKeys = [
+  "level",
+  "xpMax",
+  "xp",
+  "hpMax",
+  "hp",
+  "mpMax",
+  "mp",
+  "physicalDamage",
+  "magicalDamage",
+  "defense",
+  "speed",
+  "luck",
+] as const;
+
+type AttrKey = (typeof attrKeys)[number];
+
 const addresses = {
   money: 0x0004,
+};
+
+const attrAddressOffsets: { [k in AttrKey]: number } = {
+  level: 0x04,
+  xpMax: 0x08,
+  xp: 0x0c,
+  hpMax: 0x14,
+  hp: 0x18,
+  mpMax: 0x1c,
+  mp: 0x20,
+  physicalDamage: 0x24,
+  magicalDamage: 0x28,
+  defense: 0x2c,
+  speed: 0x30,
+  luck: 0x34,
+};
+
+type Character = {
+  attrs: {
+    level: number;
+    xpMax: number;
+    xp: number;
+    hpMax: number;
+    hp: number;
+    mpMax: number;
+    mp: number;
+    physicalDamage: number;
+    magicalDamage: number;
+    defense: number;
+    speed: number;
+    luck: number;
+  };
 };
 
 type StatsContextType = {
   stats: {
     bufIn: ArrayBuffer;
     money: number;
+    chars: Record<string, Character>;
   };
   setBufIn(buf: ArrayBuffer): void;
   getModifiedBuffer(): ArrayBuffer;
   setMoney(money: number): void;
+  setAttr(id: string, attr: { key: AttrKey; value: number }): void;
+};
+
+const initialCharacter: Character = {
+  attrs: {
+    level: 0,
+    xpMax: 0,
+    xp: 0,
+    hpMax: 0,
+    hp: 0,
+    mpMax: 0,
+    mp: 0,
+    physicalDamage: 0,
+    magicalDamage: 0,
+    defense: 0,
+    speed: 0,
+    luck: 0,
+  },
 };
 
 const initialStats: StatsContextType["stats"] = {
   bufIn: new ArrayBuffer(0),
   money: 0,
+  chars: {
+    li: initialCharacter,
+    chao: initialCharacter,
+    lin: initialCharacter,
+    anu: initialCharacter,
+    queen: initialCharacter,
+    li2: initialCharacter,
+  },
 };
 
 const StatsContext = createContext<StatsContextType>({
@@ -35,6 +111,7 @@ const StatsContext = createContext<StatsContextType>({
   setBufIn: () => {},
   getModifiedBuffer: () => new ArrayBuffer(0),
   setMoney: () => {},
+  setAttr: () => {},
 });
 
 type StatsProviderProps = {
@@ -49,6 +126,16 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     setStats({
       bufIn: bufViewer.buffer,
       money: bufViewer.getUint32(addresses.money, true),
+      chars: Object.fromEntries(
+        characterIds.map((id) => {
+          const addr = characterAddresses[id];
+          const attrs = Object.fromEntries(
+            attrKeys.map((key) => [key, bufViewer.getUint32(addr + attrAddressOffsets[key], true)]),
+          ) as { [k in AttrKey]: number };
+
+          return [id, { attrs }];
+        }),
+      ),
     });
   };
 
@@ -64,11 +151,25 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     setStats({ ...stats, money });
   };
 
+  const setAttr = (id: string, attr: { key: AttrKey; value: number }) => {
+    setStats({
+      ...stats,
+      chars: {
+        ...stats.chars,
+        [id]: {
+          ...stats.chars[id],
+          attrs: { ...stats.chars[id].attrs, [attr.key]: attr.value },
+        },
+      },
+    });
+  };
+
   const value: StatsContextType = {
     stats,
     setBufIn,
     getModifiedBuffer,
     setMoney,
+    setAttr,
   };
 
   return (
