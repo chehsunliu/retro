@@ -4,7 +4,9 @@ import ActionButtons from "@/components/action-buttons.tsx";
 import { H1, H2 } from "@/components/typography.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
+import CharacterCard from "@/features/pal-new/character-card.tsx";
 import { useStats } from "@/features/pal-new/stats-provider.tsx";
+import { characterIds } from "@/features/pal-new/stats-provider.tsx";
 
 function GeneralSection() {
   const { t } = useTranslation("common");
@@ -18,6 +20,18 @@ function GeneralSection() {
         <Label htmlFor={"money"}>{t2("money")}</Label>
         <Input id={"money"} value={stats.money} onChange={(e) => setMoney(parseInt(e.target.value, 10))} />
       </div>
+    </>
+  );
+}
+
+function CharacterSection() {
+  const { t } = useTranslation("common");
+  const characterBlocks = characterIds.map((id) => <CharacterCard id={id} key={id} />);
+
+  return (
+    <>
+      <H2>{t("subtitle.character")}</H2>
+      <div className={"grid xl:grid-cols-3 lg:grid-cols-2 md:grid-cols-1 sm:grid-cols-1 gap-4"}>{characterBlocks}</div>
     </>
   );
 }
@@ -45,6 +59,7 @@ function PalNewApp() {
         <ActionButtons onImport={handleImport} onExport={handleExport} onReset={handleReset} />
       </div>
       <GeneralSection />
+      <CharacterSection />
     </div>
   );
 }

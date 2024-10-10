@@ -1,3 +1,28 @@
 {
-  "money": "金錢"
+  "money": "金錢",
+  "subtitle": {
+    "stats": "狀態"
+  },
+  "names": {
+    "li": "李逍遙",
+    "chao": "趙靈兒",
+    "lin": "林月如",
+    "anu": "阿奴",
+    "queen": "巫后",
+    "li2": "夢境李逍遙"
+  },
+  "attrs": {
+    "level": "等級",
+    "xpMax": "最大經驗",
+    "xp": "經驗",
+    "hpMax": "最大體力",
+    "hp": "體力",
+    "mpMax": "最大真氣",
+    "mp": "真氣",
+    "physicalDamage": "武力",
+    "magicalDamage": "靈力",
+    "defense": "防禦",
+    "speed": "身法",
+    "luck": "吉運"
+  }
 }
