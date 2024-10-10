@@ -30,6 +30,8 @@ type AttrKey = (typeof attrKeys)[number];
 
 const addresses = {
   money: 0x0004,
+  inventorySize: 0x2b38,
+  inventory: 0x2b3c,
 };
 
 const attrAddressOffsets: { [k in AttrKey]: number } = {
@@ -69,11 +71,13 @@ type StatsContextType = {
     bufIn: ArrayBuffer;
     money: number;
     chars: Record<string, Character>;
+    inventory: Record<number, number>;
   };
   setBufIn(buf: ArrayBuffer): void;
   getModifiedBuffer(): ArrayBuffer;
   setMoney(money: number): void;
   setAttr(id: string, attr: { key: AttrKey; value: number }): void;
+  setInventoryItem(value: number, count: number): void;
 };
 
 const initialCharacter: Character = {
@@ -104,6 +108,7 @@ const initialStats: StatsContextType["stats"] = {
     queen: initialCharacter,
     li2: initialCharacter,
   },
+  inventory: {},
 };
 
 const StatsContext = createContext<StatsContextType>({
@@ -112,6 +117,7 @@ const StatsContext = createContext<StatsContextType>({
   getModifiedBuffer: () => new ArrayBuffer(0),
   setMoney: () => {},
   setAttr: () => {},
+  setInventoryItem: () => {},
 });
 
 type StatsProviderProps = {
@@ -123,6 +129,22 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
 
   const setBufIn = (buf: ArrayBuffer) => {
     const bufViewer = new DataView(buf.slice(0));
+
+    const inventorySize = bufViewer.getUint32(addresses.inventorySize, true);
+    const inventory: StatsContextType["stats"]["inventory"] = {};
+    for (let i = 0; i < inventorySize; i++) {
+      const valueAddr = addresses.inventory + 20 * i;
+      const countAddr = valueAddr + 4;
+
+      const value = bufViewer.getUint32(valueAddr, true);
+      if (value === 0) {
+        // It's possible the whole 20 bytes are all zeros.
+        continue;
+      }
+
+      inventory[value] = bufViewer.getUint32(countAddr, true);
+    }
+
     setStats({
       bufIn: bufViewer.buffer,
       money: bufViewer.getUint32(addresses.money, true),
@@ -136,13 +158,34 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
           return [id, { attrs }];
         }),
       ),
+      inventory,
     });
   };
 
   const getModifiedBuffer = () => {
     const bufOut = new DataView(stats.bufIn.slice(0));
+
     // Money
     bufOut.setUint32(addresses.money, stats.money, true);
+
+    // Character
+    Object.entries(stats.chars).forEach(([id, char]) => {
+      const addr = characterAddresses[id];
+
+      // Stats
+      Object.entries(char.attrs).forEach(([attrKey, attrValue]) => {
+        bufOut.setUint16(addr + attrAddressOffsets[attrKey as AttrKey], attrValue, true);
+      });
+    });
+
+    // Inventory
+    bufOut.setUint32(addresses.inventorySize, Object.keys(stats.inventory).length, true);
+    Object.entries(stats.inventory).forEach(([id, count], i) => {
+      const valueAddr = addresses.inventory + i * 20;
+      const countAddr = valueAddr + 4;
+      bufOut.setUint32(valueAddr, parseInt(id, 10), true);
+      bufOut.setUint32(countAddr, count, true);
+    });
 
     return bufOut.buffer;
   };
@@ -164,12 +207,27 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     });
   };
 
+  const setInventoryItem = (value: number, count: number) => {
+    if (count > 99 || count < 0) {
+      return;
+    }
+
+    const inventory = { ...stats.inventory };
+    if (count > 0) {
+      inventory[value] = count;
+    } else {
+      delete inventory[value];
+    }
+    setStats({ ...stats, inventory });
+  };
+
   const value: StatsContextType = {
     stats,
     setBufIn,
     getModifiedBuffer,
     setMoney,
     setAttr,
+    setInventoryItem,
   };
 
   return (
