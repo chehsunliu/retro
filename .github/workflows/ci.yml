@@ -18,8 +18,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build
+      - name: Check the code format
         run: npm run fmt-check
+
+      - name: Check ESLint
+        run: npm run lint
 
       - name: Build
         run: npm run build
