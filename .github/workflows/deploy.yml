@@ -8,7 +8,7 @@ on:
       overwrite-production:
         type: boolean
         required: false
-        description: Deploy to not only the preview but also the root folder.
+        description: Overwrite the root folder
 
 jobs:
   build:
