@@ -8,6 +8,7 @@ on:
       overwrite-production:
         type: boolean
         required: false
+        description: Overwrite the root folder
 
 jobs:
   build:
