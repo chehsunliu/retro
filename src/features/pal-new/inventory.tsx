@@ -45,9 +45,17 @@ function InventorySection() {
   const { stats, setInventoryItem } = useStats();
 
   const items = itemValues.map((v) => {
+    const label = t2(`inventory.0x${v.toString(16).padStart(4, "0")}`);
     const count = stats.inventory[v] ?? 0;
+
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-      setInventoryItem(v, parseInt(e.target.value, 10));
+      const newCount = parseInt(e.target.value, 10);
+      window.gtag("event", "retro_inventory_change", {
+        page_title: document.title,
+        item_name: label,
+        item_count: newCount,
+      });
+      setInventoryItem(v, newCount);
     };
 
     return (
@@ -58,7 +66,7 @@ function InventorySection() {
           count > 0 ? "bg-amber-400 dark:bg-amber-800" : "",
         )}
       >
-        <span>{t2(`inventory.0x${v.toString(16).padStart(4, "0")}`)}</span>
+        <span>{label}</span>
         <Input
           className={"border-none focus-visible:ring-0 text-right w-10 shadow-none"}
           value={count}
