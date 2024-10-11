@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { H2 } from "@/components/typography.tsx";
 import { Input } from "@/components/ui/input";
 import { useStats } from "@/features/pal-new/stats-provider.tsx";
+import { tracer } from "@/lib/tracer.ts";
 import { cn } from "@/lib/utils.ts";
 
 const itemValueRanges = [
@@ -50,7 +51,7 @@ function InventorySection() {
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
       const newCount = parseInt(e.target.value, 10);
-      window.gtag("event", "retro_inventory_change", {
+      tracer.gtag("event", "retro_inventory_change", {
         page_title: document.title,
         item_name: label,
         item_count: newCount,

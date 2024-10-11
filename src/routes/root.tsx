@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge.tsx";
 import { Button, buttonVariants } from "@/components/ui/button.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTheme } from "@/hooks/theme-provider.tsx";
+import { tracer } from "@/lib/tracer.ts";
 
 const games = ["swd-2e", "pal", "pal-new"];
 
@@ -37,7 +38,7 @@ function Root() {
     document.title = title;
 
     // https://stackoverflow.com/a/63249329/876595
-    window.gtag("event", "page_view", {
+    tracer.gtag("event", "page_view", {
       page_title: title,
       page_path: location.pathname + location.search,
     });
