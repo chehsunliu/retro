@@ -32,6 +32,7 @@ const addresses = {
   money: 0x0004,
   inventorySize: 0x2b38,
   inventory: 0x2b3c,
+  godOfWineUsage: 0x68c8,
 };
 
 const attrAddressOffsets: { [k in AttrKey]: number } = {
@@ -72,12 +73,14 @@ type StatsContextType = {
     money: number;
     chars: Record<string, Character>;
     inventory: Record<number, number>;
+    godOfWineUsage: number;
   };
   setBufIn(buf: ArrayBuffer): void;
   getModifiedBuffer(): ArrayBuffer;
   setMoney(money: number): void;
   setAttr(id: string, attr: { key: AttrKey; value: number }): void;
   setInventoryItem(value: number, count: number): void;
+  setGodOfWineUsage(usage: number): void;
 };
 
 const initialCharacter: Character = {
@@ -109,6 +112,7 @@ const initialStats: StatsContextType["stats"] = {
     li2: initialCharacter,
   },
   inventory: {},
+  godOfWineUsage: 0,
 };
 
 const StatsContext = createContext<StatsContextType>({
@@ -118,6 +122,7 @@ const StatsContext = createContext<StatsContextType>({
   setMoney: () => {},
   setAttr: () => {},
   setInventoryItem: () => {},
+  setGodOfWineUsage: () => {},
 });
 
 type StatsProviderProps = {
@@ -159,6 +164,7 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
         }),
       ),
       inventory,
+      godOfWineUsage: bufViewer.getUint8(addresses.godOfWineUsage),
     });
   };
 
@@ -186,6 +192,9 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
       bufOut.setUint32(valueAddr, parseInt(id, 10), true);
       bufOut.setUint32(countAddr, count, true);
     });
+
+    // God of wine usage
+    bufOut.setUint8(addresses.godOfWineUsage, stats.godOfWineUsage);
 
     return bufOut.buffer;
   };
@@ -221,6 +230,10 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     setStats({ ...stats, inventory });
   };
 
+  const setGodOfWineUsage = (usage: number) => {
+    setStats({ ...stats, godOfWineUsage: usage });
+  };
+
   const value: StatsContextType = {
     stats,
     setBufIn,
@@ -228,6 +241,7 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     setMoney,
     setAttr,
     setInventoryItem,
+    setGodOfWineUsage,
   };
 
   return (
