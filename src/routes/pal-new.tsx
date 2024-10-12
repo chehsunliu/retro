@@ -12,14 +12,24 @@ import { characterIds } from "@/features/pal-new/stats-provider.tsx";
 function GeneralSection() {
   const { t } = useTranslation("common");
   const { t: t2 } = useTranslation("pal-new");
-  const { stats, setMoney } = useStats();
+  const { stats, setMoney, setGodOfWineUsage } = useStats();
 
   return (
     <>
       <H2>{t("subtitle.general")}</H2>
-      <div className={"w-20"}>
-        <Label htmlFor={"money"}>{t2("money")}</Label>
-        <Input id={"money"} value={stats.money} onChange={(e) => setMoney(parseInt(e.target.value, 10))} />
+      <div className={"grid grid-cols-8 gap-4"}>
+        <div>
+          <Label htmlFor={"money"}>{t2("money")}</Label>
+          <Input id={"money"} value={stats.money} onChange={(e) => setMoney(parseInt(e.target.value, 10))} />
+        </div>
+        <div>
+          <Label htmlFor={"money"}>{t2("godOfWineUsage")}</Label>
+          <Input
+            id={"money"}
+            value={stats.godOfWineUsage}
+            onChange={(e) => setGodOfWineUsage(parseInt(e.target.value, 10))}
+          />
+        </div>
       </div>
     </>
   );
