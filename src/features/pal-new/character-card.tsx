@@ -45,13 +45,17 @@ const availableAbilities = createValues(availableAbilityRanges);
 
 function CharacterCard({ id }: Props) {
   const { t } = useTranslation("pal-new");
-  const { stats, setAttr, appendAbility, removeAbility } = useStats();
+  const { stats, isEditingDisabled, setAttr, appendAbility, removeAbility } = useStats();
   const char = stats.chars[id];
 
   const items = attrKeys.map((key) => (
     <div key={key}>
       <Label>{t(`attrs.${key}`)}</Label>
-      <Input value={char.attrs[key]} onChange={(e) => setAttr(id, { key, value: parseInt(e.target.value, 10) })} />
+      <Input
+        value={char.attrs[key]}
+        onChange={(e) => setAttr(id, { key, value: parseInt(e.target.value, 10) })}
+        disabled={isEditingDisabled()}
+      />
     </div>
   ));
 
@@ -103,6 +107,7 @@ function CharacterCard({ id }: Props) {
             onChange={handleValueChange}
             isClearable={false}
             closeMenuOnSelect={false}
+            isDisabled={isEditingDisabled()}
           />
         </div>
       </CardContent>

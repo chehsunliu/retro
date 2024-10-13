@@ -96,6 +96,7 @@ type StatsContextType = {
     inventory: number[];
   };
   getModifiedBuffer(): ArrayBuffer;
+  isEditingDisabled(): boolean;
   setBufIn(input: { buf: ArrayBuffer; filename: string }): void;
   setMoney(money: number): void;
   setAttr(id: string, attr: { key: AttrKey; value: number }): void;
@@ -146,6 +147,7 @@ const initialStats: StatsContextType["stats"] = {
 const StatsContext = createContext<StatsContextType>({
   stats: initialStats,
   getModifiedBuffer: () => new ArrayBuffer(0),
+  isEditingDisabled: () => true,
   setBufIn: () => {},
   setMoney: () => {},
   setAttr: () => {},
@@ -196,6 +198,8 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
 
     return bufOut.buffer;
   };
+
+  const isEditingDisabled = () => stats.bufIn.byteLength === 0;
 
   const setBufIn = (input: { buf: ArrayBuffer; filename: string }) => {
     const bufViewer = new DataView(input.buf.slice(0));
@@ -268,6 +272,7 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
   const value: StatsContextType = {
     stats,
     getModifiedBuffer,
+    isEditingDisabled,
     setBufIn,
     setMoney,
     setAttr,

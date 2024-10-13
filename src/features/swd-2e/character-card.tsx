@@ -19,13 +19,17 @@ const availableAbilities = [...Array(0x7e - 0x01 + 1).keys()].map((v) => v + 0x0
 
 function CharacterCard({ id }: Props) {
   const { t } = useTranslation("swd-2e");
-  const { stats, setAttr, appendAbility, removeAbility } = useStats();
+  const { stats, isEditingDisabled, setAttr, appendAbility, removeAbility } = useStats();
   const char = stats.chars[id];
 
   const items = attrKeys.map((key) => (
     <div key={key}>
       <Label>{t(`attrs.${key}`)}</Label>
-      <Input value={char.attrs[key]} onChange={(e) => setAttr(id, { key, value: parseInt(e.target.value, 10) })} />
+      <Input
+        value={char.attrs[key]}
+        onChange={(e) => setAttr(id, { key, value: parseInt(e.target.value, 10) })}
+        disabled={isEditingDisabled()}
+      />
     </div>
   ));
 
@@ -77,6 +81,7 @@ function CharacterCard({ id }: Props) {
             onChange={handleValueChange}
             isClearable={false}
             closeMenuOnSelect={false}
+            isDisabled={isEditingDisabled()}
           />
         </div>
       </CardContent>

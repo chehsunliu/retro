@@ -60,14 +60,14 @@ function Inventory() {
 
 function AvailableItems() {
   const { t: t2 } = useTranslation("swd-2e");
-  const { appendInventoryItem } = useStats();
+  const { isEditingDisabled, appendInventoryItem } = useStats();
 
   const handleClick = (addr: number) => () => {
     appendInventoryItem(addr);
   };
 
   const items = itemValues.map((value) => (
-    <Button key={value} variant={"ghost"} onClick={handleClick(value)}>
+    <Button key={value} variant={"ghost"} onClick={handleClick(value)} disabled={isEditingDisabled()}>
       {t2(`inventory.0x${value.toString(16).padStart(4, "0")}`)}
     </Button>
   ));
@@ -77,14 +77,14 @@ function AvailableItems() {
 
 function AvailableMonsters() {
   const { t: t2 } = useTranslation("swd-2e");
-  const { appendInventoryItem } = useStats();
+  const { isEditingDisabled, appendInventoryItem } = useStats();
 
   const handleClick = (addr: number) => () => {
     appendInventoryItem(addr);
   };
 
   const items = monsterValues.map((value) => (
-    <Button key={value} variant={"ghost"} onClick={handleClick(value)}>
+    <Button key={value} variant={"ghost"} onClick={handleClick(value)} disabled={isEditingDisabled()}>
       {t2(`inventory.0x${value.toString(16).padStart(4, "0")}`)}
     </Button>
   ));
