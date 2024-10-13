@@ -78,8 +78,8 @@ type StatsContextType = {
     chars: Record<string, Character>;
     inventory: Record<number, number>;
   };
-  setBufIn(buf: ArrayBuffer): void;
   getModifiedBuffer(): ArrayBuffer;
+  setBufIn(buf: ArrayBuffer): void;
   setMoney(money: number): void;
   setGodOfWineUsage(usage: number): void;
   setAttr(id: string, attr: { key: AttrKey; value: number }): void;
@@ -123,8 +123,8 @@ const initialStats: StatsContextType["stats"] = {
 
 const StatsContext = createContext<StatsContextType>({
   stats: initialStats,
-  setBufIn: () => {},
   getModifiedBuffer: () => new ArrayBuffer(0),
+  setBufIn: () => {},
   setMoney: () => {},
   setGodOfWineUsage: () => {},
   setAttr: () => {},
@@ -139,6 +139,45 @@ type StatsProviderProps = {
 
 export function StatsProvider({ children, ...props }: StatsProviderProps) {
   const [stats, setStats] = useState<StatsContextType["stats"]>(initialStats);
+
+  const getModifiedBuffer = () => {
+    const bufOut = new DataView(stats.bufIn.slice(0));
+
+    // Money
+    bufOut.setUint32(addresses.money, stats.money, true);
+
+    // God of wine usage
+    bufOut.setUint8(addresses.godOfWineUsage, stats.godOfWineUsage);
+
+    // Character
+    Object.entries(stats.chars).forEach(([id, char]) => {
+      const addr = characterAddresses[id];
+
+      // Stats
+      Object.entries(char.attrs).forEach(([attrKey, attrValue]) => {
+        bufOut.setUint16(addr + attrAddressOffsets[attrKey as AttrKey], attrValue, true);
+      });
+
+      // Abilities
+      const abilityCountAddr = addr + abilityCountAddressOffset;
+      const abilityAddr = abilityCountAddr + 4;
+      bufOut.setUint32(abilityCountAddr, char.abilities.length, true);
+      for (let i = 0; i < char.abilities.length; i++) {
+        bufOut.setUint32(abilityAddr + i * 4, char.abilities[i], true);
+      }
+    });
+
+    // Inventory
+    bufOut.setUint32(addresses.inventorySize, Object.keys(stats.inventory).length, true);
+    Object.entries(stats.inventory).forEach(([id, count], i) => {
+      const valueAddr = addresses.inventory + i * 20;
+      const countAddr = valueAddr + 4;
+      bufOut.setUint32(valueAddr, parseInt(id, 10), true);
+      bufOut.setUint32(countAddr, count, true);
+    });
+
+    return bufOut.buffer;
+  };
 
   const setBufIn = (buf: ArrayBuffer) => {
     const bufViewer = new DataView(buf.slice(0));
@@ -188,45 +227,6 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     });
   };
 
-  const getModifiedBuffer = () => {
-    const bufOut = new DataView(stats.bufIn.slice(0));
-
-    // Money
-    bufOut.setUint32(addresses.money, stats.money, true);
-
-    // God of wine usage
-    bufOut.setUint8(addresses.godOfWineUsage, stats.godOfWineUsage);
-
-    // Character
-    Object.entries(stats.chars).forEach(([id, char]) => {
-      const addr = characterAddresses[id];
-
-      // Stats
-      Object.entries(char.attrs).forEach(([attrKey, attrValue]) => {
-        bufOut.setUint16(addr + attrAddressOffsets[attrKey as AttrKey], attrValue, true);
-      });
-
-      // Abilities
-      const abilityCountAddr = addr + abilityCountAddressOffset;
-      const abilityAddr = abilityCountAddr + 4;
-      bufOut.setUint32(abilityCountAddr, char.abilities.length, true);
-      for (let i = 0; i < char.abilities.length; i++) {
-        bufOut.setUint32(abilityAddr + i * 4, char.abilities[i], true);
-      }
-    });
-
-    // Inventory
-    bufOut.setUint32(addresses.inventorySize, Object.keys(stats.inventory).length, true);
-    Object.entries(stats.inventory).forEach(([id, count], i) => {
-      const valueAddr = addresses.inventory + i * 20;
-      const countAddr = valueAddr + 4;
-      bufOut.setUint32(valueAddr, parseInt(id, 10), true);
-      bufOut.setUint32(countAddr, count, true);
-    });
-
-    return bufOut.buffer;
-  };
-
   const setMoney = (money: number) => {
     setStats({ ...stats, money });
   };
@@ -274,8 +274,8 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
 
   const value: StatsContextType = {
     stats,
-    setBufIn,
     getModifiedBuffer,
+    setBufIn,
     setMoney,
     setGodOfWineUsage,
     setAttr,
