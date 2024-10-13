@@ -1,6 +1,7 @@
 {
   "money": "金錢",
   "godOfWineUsage": "酒神使用次數",
+  "abilityPlaceholder": "選擇...",
   "subtitle": {
     "stats": "狀態",
     "abilities": "仙術"
