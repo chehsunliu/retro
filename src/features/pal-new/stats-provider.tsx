@@ -50,6 +50,8 @@ const attrAddressOffsets: { [k in AttrKey]: number } = {
   luck: 0x34,
 };
 
+const abilityCountAddressOffset = 0x6c;
+
 type Character = {
   attrs: {
     level: number;
@@ -65,22 +67,25 @@ type Character = {
     speed: number;
     luck: number;
   };
+  abilities: number[];
 };
 
 type StatsContextType = {
   stats: {
     bufIn: ArrayBuffer;
     money: number;
+    godOfWineUsage: number;
     chars: Record<string, Character>;
     inventory: Record<number, number>;
-    godOfWineUsage: number;
   };
   setBufIn(buf: ArrayBuffer): void;
   getModifiedBuffer(): ArrayBuffer;
   setMoney(money: number): void;
-  setAttr(id: string, attr: { key: AttrKey; value: number }): void;
-  setInventoryItem(value: number, count: number): void;
   setGodOfWineUsage(usage: number): void;
+  setAttr(id: string, attr: { key: AttrKey; value: number }): void;
+  appendAbility(id: string, value: number): void;
+  removeAbility(id: string, value: number): void;
+  setInventoryItem(value: number, count: number): void;
 };
 
 const initialCharacter: Character = {
@@ -98,11 +103,13 @@ const initialCharacter: Character = {
     speed: 0,
     luck: 0,
   },
+  abilities: [],
 };
 
 const initialStats: StatsContextType["stats"] = {
   bufIn: new ArrayBuffer(0),
   money: 0,
+  godOfWineUsage: 0,
   chars: {
     li: initialCharacter,
     chao: initialCharacter,
@@ -112,7 +119,6 @@ const initialStats: StatsContextType["stats"] = {
     li2: initialCharacter,
   },
   inventory: {},
-  godOfWineUsage: 0,
 };
 
 const StatsContext = createContext<StatsContextType>({
@@ -120,9 +126,11 @@ const StatsContext = createContext<StatsContextType>({
   setBufIn: () => {},
   getModifiedBuffer: () => new ArrayBuffer(0),
   setMoney: () => {},
-  setAttr: () => {},
-  setInventoryItem: () => {},
   setGodOfWineUsage: () => {},
+  setAttr: () => {},
+  appendAbility: () => {},
+  removeAbility: () => {},
+  setInventoryItem: () => {},
 });
 
 type StatsProviderProps = {
@@ -153,18 +161,30 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     setStats({
       bufIn: bufViewer.buffer,
       money: bufViewer.getUint32(addresses.money, true),
+      godOfWineUsage: bufViewer.getUint8(addresses.godOfWineUsage),
       chars: Object.fromEntries(
         characterIds.map((id) => {
           const addr = characterAddresses[id];
+
+          // Attributes
           const attrs = Object.fromEntries(
             attrKeys.map((key) => [key, bufViewer.getUint32(addr + attrAddressOffsets[key], true)]),
           ) as { [k in AttrKey]: number };
 
-          return [id, { attrs }];
+          // Abilities
+          const abilityCountAddr = addr + abilityCountAddressOffset;
+          const abilityAddr = abilityCountAddr + 4;
+
+          const abilityCount = bufViewer.getUint32(abilityCountAddr, true);
+          const abilities: number[] = [];
+          for (let i = 0; i < abilityCount; i++) {
+            abilities.push(bufViewer.getUint32(abilityAddr + i * 4, true));
+          }
+
+          return [id, { attrs, abilities }];
         }),
       ),
       inventory,
-      godOfWineUsage: bufViewer.getUint8(addresses.godOfWineUsage),
     });
   };
 
@@ -174,6 +194,9 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     // Money
     bufOut.setUint32(addresses.money, stats.money, true);
 
+    // God of wine usage
+    bufOut.setUint8(addresses.godOfWineUsage, stats.godOfWineUsage);
+
     // Character
     Object.entries(stats.chars).forEach(([id, char]) => {
       const addr = characterAddresses[id];
@@ -182,6 +205,14 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
       Object.entries(char.attrs).forEach(([attrKey, attrValue]) => {
         bufOut.setUint16(addr + attrAddressOffsets[attrKey as AttrKey], attrValue, true);
       });
+
+      // Abilities
+      const abilityCountAddr = addr + abilityCountAddressOffset;
+      const abilityAddr = abilityCountAddr + 4;
+      bufOut.setUint32(abilityCountAddr, char.abilities.length, true);
+      for (let i = 0; i < char.abilities.length; i++) {
+        bufOut.setUint32(abilityAddr + i * 4, char.abilities[i], true);
+      }
     });
 
     // Inventory
@@ -193,14 +224,15 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
       bufOut.setUint32(countAddr, count, true);
     });
 
-    // God of wine usage
-    bufOut.setUint8(addresses.godOfWineUsage, stats.godOfWineUsage);
-
     return bufOut.buffer;
   };
 
   const setMoney = (money: number) => {
     setStats({ ...stats, money });
+  };
+
+  const setGodOfWineUsage = (usage: number) => {
+    setStats({ ...stats, godOfWineUsage: usage });
   };
 
   const setAttr = (id: string, attr: { key: AttrKey; value: number }) => {
@@ -214,6 +246,16 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
         },
       },
     });
+  };
+
+  const appendAbility = (id: string, value: number) => {
+    const abilities = [...stats.chars[id].abilities, value];
+    setStats({ ...stats, chars: { ...stats.chars, [id]: { ...stats.chars[id], abilities } } });
+  };
+
+  const removeAbility = (id: string, value: number) => {
+    const abilities = stats.chars[id].abilities.filter((a) => a !== value);
+    setStats({ ...stats, chars: { ...stats.chars, [id]: { ...stats.chars[id], abilities } } });
   };
 
   const setInventoryItem = (value: number, count: number) => {
@@ -230,18 +272,16 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     setStats({ ...stats, inventory });
   };
 
-  const setGodOfWineUsage = (usage: number) => {
-    setStats({ ...stats, godOfWineUsage: usage });
-  };
-
   const value: StatsContextType = {
     stats,
     setBufIn,
     getModifiedBuffer,
     setMoney,
-    setAttr,
-    setInventoryItem,
     setGodOfWineUsage,
+    setAttr,
+    appendAbility,
+    removeAbility,
+    setInventoryItem,
   };
 
   return (
