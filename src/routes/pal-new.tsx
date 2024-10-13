@@ -49,10 +49,10 @@ function CharacterSection() {
 
 function PalNewApp() {
   const { t } = useTranslation("common");
-  const { stats, setBufIn, getModifiedBuffer } = useStats();
+  const { stats, getModifiedBuffer, setBufIn } = useStats();
 
-  const handleImport = (buffer: ArrayBuffer) => {
-    setBufIn(buffer);
+  const handleImport = (input: { buffer: ArrayBuffer; filename: string }) => {
+    setBufIn({ buf: input.buffer, filename: input.filename });
   };
 
   const handleExport = () => {
@@ -60,14 +60,21 @@ function PalNewApp() {
   };
 
   const handleReset = () => {
-    setBufIn(stats.bufIn);
+    setBufIn({ buf: stats.bufIn, filename: stats.filename });
   };
 
   return (
     <div className={"space-y-8"}>
       <div className={"flex flex-row justify-between items-end"}>
         <H1>{t("title.pal-new")}</H1>
-        <ActionButtons onImport={handleImport} onExport={handleExport} onReset={handleReset} />
+        <ActionButtons
+          exportedFilename={stats.filename}
+          exportDisabled={stats.bufIn.byteLength === 0}
+          resetDisabled={stats.bufIn.byteLength === 0}
+          onImport={handleImport}
+          onExport={handleExport}
+          onReset={handleReset}
+        />
       </div>
       <GeneralSection />
       <CharacterSection />

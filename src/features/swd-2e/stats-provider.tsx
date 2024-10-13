@@ -89,13 +89,14 @@ type Character = {
 
 type StatsContextType = {
   stats: {
+    filename: string;
     bufIn: ArrayBuffer;
     money: number;
     chars: Record<string, Character>;
     inventory: number[];
   };
-  setBufIn(buf: ArrayBuffer): void;
   getModifiedBuffer(): ArrayBuffer;
+  setBufIn(input: { buf: ArrayBuffer; filename: string }): void;
   setMoney(money: number): void;
   setAttr(id: string, attr: { key: AttrKey; value: number }): void;
   appendAbility(id: string, value: number): void;
@@ -130,6 +131,7 @@ const initialCharacter: Character = {
 };
 
 const initialStats: StatsContextType["stats"] = {
+  filename: "",
   bufIn: new ArrayBuffer(0),
   money: 0,
   chars: {
@@ -143,8 +145,8 @@ const initialStats: StatsContextType["stats"] = {
 
 const StatsContext = createContext<StatsContextType>({
   stats: initialStats,
-  setBufIn: () => {},
   getModifiedBuffer: () => new ArrayBuffer(0),
+  setBufIn: () => {},
   setMoney: () => {},
   setAttr: () => {},
   appendInventoryItem: () => {},
@@ -159,33 +161,6 @@ type StatsProviderProps = {
 
 export function StatsProvider({ children, ...props }: StatsProviderProps) {
   const [stats, setStats] = useState<StatsContextType["stats"]>(initialStats);
-
-  const setBufIn = (buf: ArrayBuffer) => {
-    const bufViewer = new DataView(buf.slice(0));
-    setStats({
-      bufIn: bufViewer.buffer,
-      money: bufViewer.getUint16(addresses.money, true),
-      chars: Object.fromEntries(
-        characterIds.map((id) => {
-          const addr = characterAddresses[id];
-          const attrs = Object.fromEntries(
-            attrKeys.map((key) => [key, bufViewer.getUint16(addr + attrAddressOffsets[key], true)]),
-          ) as { [k in AttrKey]: number };
-          const abilities = [...Array(abilityFieldCount).keys()]
-            .map((offset) => bufViewer.getUint8(addr + abilityAddressOffset + offset))
-            .filter((value) => value > 0);
-
-          return [id, { attrs, abilities }];
-        }),
-      ),
-      inventory: Array.from(
-        { length: (addresses.mutableInventory.end - addresses.mutableInventory.start) / 2 },
-        (_, i) => i * 2 + addresses.mutableInventory.start,
-      )
-        .map((addr) => bufViewer.getUint16(addr, true))
-        .filter((value) => value > 0),
-    });
-  };
 
   const getModifiedBuffer = (): ArrayBuffer => {
     const bufOut = new DataView(stats.bufIn.slice(0));
@@ -220,6 +195,34 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     }
 
     return bufOut.buffer;
+  };
+
+  const setBufIn = (input: { buf: ArrayBuffer; filename: string }) => {
+    const bufViewer = new DataView(input.buf.slice(0));
+    setStats({
+      filename: input.filename,
+      bufIn: bufViewer.buffer,
+      money: bufViewer.getUint16(addresses.money, true),
+      chars: Object.fromEntries(
+        characterIds.map((id) => {
+          const addr = characterAddresses[id];
+          const attrs = Object.fromEntries(
+            attrKeys.map((key) => [key, bufViewer.getUint16(addr + attrAddressOffsets[key], true)]),
+          ) as { [k in AttrKey]: number };
+          const abilities = [...Array(abilityFieldCount).keys()]
+            .map((offset) => bufViewer.getUint8(addr + abilityAddressOffset + offset))
+            .filter((value) => value > 0);
+
+          return [id, { attrs, abilities }];
+        }),
+      ),
+      inventory: Array.from(
+        { length: (addresses.mutableInventory.end - addresses.mutableInventory.start) / 2 },
+        (_, i) => i * 2 + addresses.mutableInventory.start,
+      )
+        .map((addr) => bufViewer.getUint16(addr, true))
+        .filter((value) => value > 0),
+    });
   };
 
   const setMoney = (money: number) => {
@@ -264,8 +267,8 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
 
   const value: StatsContextType = {
     stats,
-    setBufIn,
     getModifiedBuffer,
+    setBufIn,
     setMoney,
     setAttr,
     appendAbility,

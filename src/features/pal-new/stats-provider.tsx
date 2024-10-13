@@ -72,14 +72,15 @@ type Character = {
 
 type StatsContextType = {
   stats: {
+    filename: string;
     bufIn: ArrayBuffer;
     money: number;
     godOfWineUsage: number;
     chars: Record<string, Character>;
     inventory: Record<number, number>;
   };
-  setBufIn(buf: ArrayBuffer): void;
   getModifiedBuffer(): ArrayBuffer;
+  setBufIn(input: { buf: ArrayBuffer; filename: string }): void;
   setMoney(money: number): void;
   setGodOfWineUsage(usage: number): void;
   setAttr(id: string, attr: { key: AttrKey; value: number }): void;
@@ -107,6 +108,7 @@ const initialCharacter: Character = {
 };
 
 const initialStats: StatsContextType["stats"] = {
+  filename: "",
   bufIn: new ArrayBuffer(0),
   money: 0,
   godOfWineUsage: 0,
@@ -123,8 +125,8 @@ const initialStats: StatsContextType["stats"] = {
 
 const StatsContext = createContext<StatsContextType>({
   stats: initialStats,
-  setBufIn: () => {},
   getModifiedBuffer: () => new ArrayBuffer(0),
+  setBufIn: () => {},
   setMoney: () => {},
   setGodOfWineUsage: () => {},
   setAttr: () => {},
@@ -139,54 +141,6 @@ type StatsProviderProps = {
 
 export function StatsProvider({ children, ...props }: StatsProviderProps) {
   const [stats, setStats] = useState<StatsContextType["stats"]>(initialStats);
-
-  const setBufIn = (buf: ArrayBuffer) => {
-    const bufViewer = new DataView(buf.slice(0));
-
-    const inventorySize = bufViewer.getUint32(addresses.inventorySize, true);
-    const inventory: StatsContextType["stats"]["inventory"] = {};
-    for (let i = 0; i < inventorySize; i++) {
-      const valueAddr = addresses.inventory + 20 * i;
-      const countAddr = valueAddr + 4;
-
-      const value = bufViewer.getUint32(valueAddr, true);
-      if (value === 0) {
-        // It's possible the whole 20 bytes are all zeros.
-        continue;
-      }
-
-      inventory[value] = bufViewer.getUint32(countAddr, true);
-    }
-
-    setStats({
-      bufIn: bufViewer.buffer,
-      money: bufViewer.getUint32(addresses.money, true),
-      godOfWineUsage: bufViewer.getUint8(addresses.godOfWineUsage),
-      chars: Object.fromEntries(
-        characterIds.map((id) => {
-          const addr = characterAddresses[id];
-
-          // Attributes
-          const attrs = Object.fromEntries(
-            attrKeys.map((key) => [key, bufViewer.getUint32(addr + attrAddressOffsets[key], true)]),
-          ) as { [k in AttrKey]: number };
-
-          // Abilities
-          const abilityCountAddr = addr + abilityCountAddressOffset;
-          const abilityAddr = abilityCountAddr + 4;
-
-          const abilityCount = bufViewer.getUint32(abilityCountAddr, true);
-          const abilities: number[] = [];
-          for (let i = 0; i < abilityCount; i++) {
-            abilities.push(bufViewer.getUint32(abilityAddr + i * 4, true));
-          }
-
-          return [id, { attrs, abilities }];
-        }),
-      ),
-      inventory,
-    });
-  };
 
   const getModifiedBuffer = () => {
     const bufOut = new DataView(stats.bufIn.slice(0));
@@ -225,6 +179,55 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     });
 
     return bufOut.buffer;
+  };
+
+  const setBufIn = (input: { buf: ArrayBuffer; filename: string }) => {
+    const bufViewer = new DataView(input.buf.slice(0));
+
+    const inventorySize = bufViewer.getUint32(addresses.inventorySize, true);
+    const inventory: StatsContextType["stats"]["inventory"] = {};
+    for (let i = 0; i < inventorySize; i++) {
+      const valueAddr = addresses.inventory + 20 * i;
+      const countAddr = valueAddr + 4;
+
+      const value = bufViewer.getUint32(valueAddr, true);
+      if (value === 0) {
+        // It's possible the whole 20 bytes are all zeros.
+        continue;
+      }
+
+      inventory[value] = bufViewer.getUint32(countAddr, true);
+    }
+
+    setStats({
+      filename: input.filename,
+      bufIn: bufViewer.buffer,
+      money: bufViewer.getUint32(addresses.money, true),
+      godOfWineUsage: bufViewer.getUint8(addresses.godOfWineUsage),
+      chars: Object.fromEntries(
+        characterIds.map((id) => {
+          const addr = characterAddresses[id];
+
+          // Attributes
+          const attrs = Object.fromEntries(
+            attrKeys.map((key) => [key, bufViewer.getUint32(addr + attrAddressOffsets[key], true)]),
+          ) as { [k in AttrKey]: number };
+
+          // Abilities
+          const abilityCountAddr = addr + abilityCountAddressOffset;
+          const abilityAddr = abilityCountAddr + 4;
+
+          const abilityCount = bufViewer.getUint32(abilityCountAddr, true);
+          const abilities: number[] = [];
+          for (let i = 0; i < abilityCount; i++) {
+            abilities.push(bufViewer.getUint32(abilityAddr + i * 4, true));
+          }
+
+          return [id, { attrs, abilities }];
+        }),
+      ),
+      inventory,
+    });
   };
 
   const setMoney = (money: number) => {
@@ -274,8 +277,8 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
 
   const value: StatsContextType = {
     stats,
-    setBufIn,
     getModifiedBuffer,
+    setBufIn,
     setMoney,
     setGodOfWineUsage,
     setAttr,

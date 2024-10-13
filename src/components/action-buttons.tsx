@@ -1,5 +1,5 @@
 import { Download, RotateCcw, Upload } from "lucide-react";
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button.tsx";
@@ -7,14 +7,23 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { tracer } from "@/lib/tracer.ts";
 
 type ActionButtonsProps = {
-  onImport?: (buffer: ArrayBuffer) => void;
+  exportedFilename: string;
+  exportDisabled?: boolean;
+  resetDisabled?: boolean;
+  onImport?: (params: { buffer: ArrayBuffer; filename: string }) => void;
   onExport?: () => ArrayBuffer;
   onReset?: () => void;
 };
 
-function ActionButtons({ onImport, onExport, onReset }: ActionButtonsProps) {
+function ActionButtons({
+  exportedFilename,
+  exportDisabled,
+  resetDisabled,
+  onImport,
+  onExport,
+  onReset,
+}: ActionButtonsProps) {
   const { t } = useTranslation("common");
-  const [importedFilename, setImportedFilename] = useState("");
 
   const hiddenFileInput = useRef<HTMLInputElement>(null);
   const handleImportClick = () => {
@@ -29,7 +38,6 @@ function ActionButtons({ onImport, onExport, onReset }: ActionButtonsProps) {
 
     const targetFile = e.target.files[0];
     const reader = new FileReader();
-    setImportedFilename(targetFile.name);
 
     reader.onload = (e) => {
       if (e.target === null) {
@@ -43,7 +51,7 @@ function ActionButtons({ onImport, onExport, onReset }: ActionButtonsProps) {
         return;
       }
 
-      onImport?.(buffer);
+      onImport?.({ buffer, filename: targetFile.name });
     };
     reader.readAsArrayBuffer(targetFile);
   };
@@ -58,7 +66,7 @@ function ActionButtons({ onImport, onExport, onReset }: ActionButtonsProps) {
     const href = URL.createObjectURL(new Blob([buf]));
     const link = document.createElement("a");
     link.href = href;
-    link.download = importedFilename || "unknown.save";
+    link.download = exportedFilename;
     link.click();
   };
 
@@ -83,7 +91,7 @@ function ActionButtons({ onImport, onExport, onReset }: ActionButtonsProps) {
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant={"ghost"} disabled={importedFilename.length === 0} onClick={handleExport}>
+            <Button variant={"ghost"} disabled={exportDisabled} onClick={handleExport}>
               <Download className={"h-[1.2rem] w-[1.2rem]"} />
             </Button>
           </TooltipTrigger>
@@ -93,7 +101,7 @@ function ActionButtons({ onImport, onExport, onReset }: ActionButtonsProps) {
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant={"ghost"} onClick={handleReset}>
+            <Button variant={"ghost"} disabled={resetDisabled} onClick={handleReset}>
               <RotateCcw className={"h-[1.2rem] w-[1.2rem]"} />
             </Button>
           </TooltipTrigger>
