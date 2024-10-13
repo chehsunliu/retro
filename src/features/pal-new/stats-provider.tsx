@@ -80,6 +80,7 @@ type StatsContextType = {
     inventory: Record<number, number>;
   };
   getModifiedBuffer(): ArrayBuffer;
+  isEditingDisabled(): boolean;
   setBufIn(input: { buf: ArrayBuffer; filename: string }): void;
   setMoney(money: number): void;
   setGodOfWineUsage(usage: number): void;
@@ -126,6 +127,7 @@ const initialStats: StatsContextType["stats"] = {
 const StatsContext = createContext<StatsContextType>({
   stats: initialStats,
   getModifiedBuffer: () => new ArrayBuffer(0),
+  isEditingDisabled: () => true,
   setBufIn: () => {},
   setMoney: () => {},
   setGodOfWineUsage: () => {},
@@ -180,6 +182,8 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
 
     return bufOut.buffer;
   };
+
+  const isEditingDisabled = () => stats.bufIn.byteLength === 0;
 
   const setBufIn = (input: { buf: ArrayBuffer; filename: string }) => {
     const bufViewer = new DataView(input.buf.slice(0));
@@ -278,6 +282,7 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
   const value: StatsContextType = {
     stats,
     getModifiedBuffer,
+    isEditingDisabled,
     setBufIn,
     setMoney,
     setGodOfWineUsage,

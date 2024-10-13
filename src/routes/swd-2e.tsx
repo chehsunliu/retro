@@ -11,14 +11,19 @@ import { characterIds, useStats } from "@/features/swd-2e/stats-provider.tsx";
 function GeneralSection() {
   const { t } = useTranslation("common");
   const { t: t2 } = useTranslation("swd-2e");
-  const { stats, setMoney } = useStats();
+  const { stats, isEditingDisabled, setMoney } = useStats();
 
   return (
     <>
       <H2>{t("subtitle.general")}</H2>
       <div className={"w-20"}>
         <Label htmlFor={"money"}>{t2("money")}</Label>
-        <Input id={"money"} value={stats.money} onChange={(e) => setMoney(parseInt(e.target.value, 10))} />
+        <Input
+          id={"money"}
+          value={stats.money}
+          onChange={(e) => setMoney(parseInt(e.target.value, 10))}
+          disabled={isEditingDisabled()}
+        />
       </div>
     </>
   );

@@ -43,7 +43,7 @@ const itemValues = createValues(itemValueRanges);
 function InventorySection() {
   const { t } = useTranslation("common");
   const { t: t2 } = useTranslation("pal-new");
-  const { stats, setInventoryItem } = useStats();
+  const { stats, isEditingDisabled, setInventoryItem } = useStats();
 
   const items = itemValues.map((v) => {
     const label = t2(`inventory.0x${v.toString(16).padStart(4, "0")}`);
@@ -72,6 +72,7 @@ function InventorySection() {
           className={"border-none focus-visible:ring-0 text-right w-10 shadow-none"}
           value={count}
           onChange={handleChange}
+          disabled={isEditingDisabled()}
         />
       </span>
     );

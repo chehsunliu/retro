@@ -12,7 +12,7 @@ import { characterIds } from "@/features/pal-new/stats-provider.tsx";
 function GeneralSection() {
   const { t } = useTranslation("common");
   const { t: t2 } = useTranslation("pal-new");
-  const { stats, setMoney, setGodOfWineUsage } = useStats();
+  const { stats, isEditingDisabled, setMoney, setGodOfWineUsage } = useStats();
 
   return (
     <>
@@ -20,7 +20,12 @@ function GeneralSection() {
       <div className={"grid grid-cols-8 gap-4"}>
         <div>
           <Label htmlFor={"money"}>{t2("money")}</Label>
-          <Input id={"money"} value={stats.money} onChange={(e) => setMoney(parseInt(e.target.value, 10))} />
+          <Input
+            id={"money"}
+            value={stats.money}
+            onChange={(e) => setMoney(parseInt(e.target.value, 10))}
+            disabled={isEditingDisabled()}
+          />
         </div>
         <div>
           <Label htmlFor={"money"}>{t2("godOfWineUsage")}</Label>
@@ -28,6 +33,7 @@ function GeneralSection() {
             id={"money"}
             value={stats.godOfWineUsage}
             onChange={(e) => setGodOfWineUsage(parseInt(e.target.value, 10))}
+            disabled={isEditingDisabled()}
           />
         </div>
       </div>
