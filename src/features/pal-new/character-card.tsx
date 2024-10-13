@@ -96,6 +96,7 @@ function CharacterCard({ id }: Props) {
           <Select
             className="my-react-select-container"
             classNamePrefix="my-react-select"
+            placeholder={t("abilityPlaceholder")}
             isMulti
             options={abilityOptions}
             value={abilities}

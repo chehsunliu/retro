@@ -1,5 +1,6 @@
 {
   "money": "金錢",
+  "abilityPlaceholder": "選擇...",
   "subtitle": {
     "stats": "狀態",
     "abilities": "奇術"
