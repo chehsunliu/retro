@@ -89,13 +89,14 @@ type Character = {
 
 type StatsContextType = {
   stats: {
+    filename: string;
     bufIn: ArrayBuffer;
     money: number;
     chars: Record<string, Character>;
     inventory: number[];
   };
   getModifiedBuffer(): ArrayBuffer;
-  setBufIn(buf: ArrayBuffer): void;
+  setBufIn(input: { buf: ArrayBuffer; filename: string }): void;
   setMoney(money: number): void;
   setAttr(id: string, attr: { key: AttrKey; value: number }): void;
   appendAbility(id: string, value: number): void;
@@ -130,6 +131,7 @@ const initialCharacter: Character = {
 };
 
 const initialStats: StatsContextType["stats"] = {
+  filename: "",
   bufIn: new ArrayBuffer(0),
   money: 0,
   chars: {
@@ -195,9 +197,10 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     return bufOut.buffer;
   };
 
-  const setBufIn = (buf: ArrayBuffer) => {
-    const bufViewer = new DataView(buf.slice(0));
+  const setBufIn = (input: { buf: ArrayBuffer; filename: string }) => {
+    const bufViewer = new DataView(input.buf.slice(0));
     setStats({
+      filename: input.filename,
       bufIn: bufViewer.buffer,
       money: bufViewer.getUint16(addresses.money, true),
       chars: Object.fromEntries(

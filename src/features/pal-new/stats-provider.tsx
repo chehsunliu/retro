@@ -72,6 +72,7 @@ type Character = {
 
 type StatsContextType = {
   stats: {
+    filename: string;
     bufIn: ArrayBuffer;
     money: number;
     godOfWineUsage: number;
@@ -79,7 +80,7 @@ type StatsContextType = {
     inventory: Record<number, number>;
   };
   getModifiedBuffer(): ArrayBuffer;
-  setBufIn(buf: ArrayBuffer): void;
+  setBufIn(input: { buf: ArrayBuffer; filename: string }): void;
   setMoney(money: number): void;
   setGodOfWineUsage(usage: number): void;
   setAttr(id: string, attr: { key: AttrKey; value: number }): void;
@@ -107,6 +108,7 @@ const initialCharacter: Character = {
 };
 
 const initialStats: StatsContextType["stats"] = {
+  filename: "",
   bufIn: new ArrayBuffer(0),
   money: 0,
   godOfWineUsage: 0,
@@ -179,8 +181,8 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     return bufOut.buffer;
   };
 
-  const setBufIn = (buf: ArrayBuffer) => {
-    const bufViewer = new DataView(buf.slice(0));
+  const setBufIn = (input: { buf: ArrayBuffer; filename: string }) => {
+    const bufViewer = new DataView(input.buf.slice(0));
 
     const inventorySize = bufViewer.getUint32(addresses.inventorySize, true);
     const inventory: StatsContextType["stats"]["inventory"] = {};
@@ -198,6 +200,7 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     }
 
     setStats({
+      filename: input.filename,
       bufIn: bufViewer.buffer,
       money: bufViewer.getUint32(addresses.money, true),
       godOfWineUsage: bufViewer.getUint8(addresses.godOfWineUsage),
