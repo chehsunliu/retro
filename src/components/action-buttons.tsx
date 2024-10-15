@@ -82,7 +82,13 @@ function ActionButtons({
           <TooltipTrigger asChild>
             <Button variant={"ghost"} onClick={handleImportClick}>
               <Upload className={"h-[1.2rem] w-[1.2rem]"} />
-              <input hidden={true} type={"file"} ref={hiddenFileInput} onChange={handleImport} />
+              <input
+                hidden={true}
+                type={"file"}
+                ref={hiddenFileInput}
+                onChange={handleImport}
+                data-testid="import-input"
+              />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -91,7 +97,7 @@ function ActionButtons({
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant={"ghost"} disabled={exportDisabled} onClick={handleExport}>
+            <Button variant={"ghost"} disabled={exportDisabled} onClick={handleExport} data-testid="export-button">
               <Download className={"h-[1.2rem] w-[1.2rem]"} />
             </Button>
           </TooltipTrigger>
@@ -101,7 +107,7 @@ function ActionButtons({
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant={"ghost"} disabled={resetDisabled} onClick={handleReset}>
+            <Button variant={"ghost"} disabled={resetDisabled} onClick={handleReset} data-testid="reset-button">
               <RotateCcw className={"h-[1.2rem] w-[1.2rem]"} />
             </Button>
           </TooltipTrigger>
