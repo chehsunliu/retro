@@ -24,8 +24,9 @@ function CharacterCard({ id }: Props) {
 
   const items = attrKeys.map((key) => (
     <div key={key}>
-      <Label>{t(`attrs.${key}`)}</Label>
+      <Label htmlFor={`${id}.${key}`}>{t(`attrs.${key}`)}</Label>
       <Input
+        id={`${id}.${key}`}
         value={char.attrs[key]}
         onChange={(e) => setAttr(id, { key, value: parseInt(e.target.value, 10) })}
         disabled={isEditingDisabled()}
