@@ -3,8 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import ActionButtons from "@/components/action-buttons.tsx";
-
-const pause = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+import { pause } from "@/lib/utils.ts";
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
