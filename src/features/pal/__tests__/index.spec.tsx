@@ -52,7 +52,15 @@ describe("After import", () => {
     await userEvent.upload(importInput, new File([buffer], "1.sav"));
 
     await pause(100);
-
     expect(screen.getByLabelText("money").getAttribute("value")).toBe("917153");
+
+    const f = vi.fn(() => "");
+    global.URL.createObjectURL = f;
+    HTMLAnchorElement.prototype.click = vi.fn();
+
+    const exportButton = screen.getByTestId("export-button");
+    await userEvent.click(exportButton);
+
+    console.log(f.mock.calls[0]);
   });
 });
