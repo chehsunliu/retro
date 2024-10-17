@@ -67,7 +67,7 @@ function InventorySection() {
             onChange={handleCountChange}
             disabled={isEditingDisabled()}
           />
-          <span>/</span>
+          <span className={cn(isEditingDisabled() ? "text-slate-400" : "")}>/</span>
           <Input
             className={"border-none focus-visible:ring-0 text-right w-6 px-0 shadow-none"}
             value={usage?.used ?? 0}

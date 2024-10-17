@@ -12,7 +12,7 @@ import { characterIds } from "@/features/pal/stats-provider.tsx";
 function GeneralSection() {
   const { t } = useTranslation("common");
   const { t: t2 } = useTranslation("pal");
-  const { stats, isEditingDisabled, setSavingCount, setMoney } = useStats();
+  const { stats, isEditingDisabled, setSavingCount, setHuluValue, setMoney } = useStats();
 
   return (
     <>
@@ -24,6 +24,15 @@ function GeneralSection() {
             id={"savingCount"}
             value={stats.savingCount}
             onChange={(e) => setSavingCount(parseInt(e.target.value, 10))}
+            disabled={isEditingDisabled()}
+          />
+        </div>
+        <div>
+          <Label htmlFor={"huluValue"}>{t2("huluValue")}</Label>
+          <Input
+            id={"huluValue"}
+            value={stats.huluValue}
+            onChange={(e) => setHuluValue(parseInt(e.target.value, 10))}
             disabled={isEditingDisabled()}
           />
         </div>
