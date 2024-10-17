@@ -60,7 +60,7 @@ function Root() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={"swd-2e"}>{t("title.swd-2e")}</SelectItem>
-              {/*<SelectItem value={"pal"}>{t("title.pal")}</SelectItem>*/}
+              <SelectItem value={"pal"}>{t("title.pal")}</SelectItem>
               <SelectItem value={"pal-new"}>{t("title.pal-new")}</SelectItem>
             </SelectContent>
           </Select>

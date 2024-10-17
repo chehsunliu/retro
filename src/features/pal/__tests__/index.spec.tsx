@@ -4,8 +4,8 @@ import * as fs from "node:fs";
 import path from "path";
 import { afterEach, describe, it, vi, expect } from "vitest";
 
-import { PalNewApp } from "@/features/pal-new";
-import { attrKeys, StatsProvider as PalNewStatsProvider } from "@/features/pal-new/stats-provider.tsx";
+import { PalApp } from "@/features/pal";
+import { attrKeys, StatsProvider as PalStatsProvider } from "@/features/pal/stats-provider.tsx";
 import { pause } from "@/lib/utils.ts";
 
 vi.mock("react-i18next", () => ({
@@ -21,13 +21,12 @@ describe("Before import", () => {
 
   it("blocks editing", async () => {
     render(
-      <PalNewStatsProvider>
-        <PalNewApp />
-      </PalNewStatsProvider>,
+      <PalStatsProvider>
+        <PalApp />
+      </PalStatsProvider>,
     );
 
     expect(screen.getByLabelText("money").hasAttribute("disabled")).toBeTruthy();
-    expect(screen.getByLabelText("godOfWineUsage").hasAttribute("disabled")).toBeTruthy();
 
     for (const attr of attrKeys) {
       const inputs = screen.getAllByLabelText(`attrs.${attr}`);
@@ -43,17 +42,17 @@ describe("After import", () => {
 
   it("should show the game stats correctly", async () => {
     render(
-      <PalNewStatsProvider>
-        <PalNewApp />
-      </PalNewStatsProvider>,
+      <PalStatsProvider>
+        <PalApp />
+      </PalStatsProvider>,
     );
 
     const importInput = screen.getByTestId("import-input");
-    const buffer = fs.readFileSync(path.join(__dirname, "./data/1.sav"));
+    const buffer = fs.readFileSync(path.join(__dirname, "./data/dos/1.RPG"));
     await userEvent.upload(importInput, new File([buffer], "1.sav"));
 
     await pause(100);
 
-    expect(screen.getByLabelText("money").getAttribute("value")).toBe("5058871");
+    expect(screen.getByLabelText("money").getAttribute("value")).toBe("917153");
   });
 });
