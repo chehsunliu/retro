@@ -49,11 +49,11 @@ describe("After import", () => {
     );
 
     const importInput = screen.getByTestId("import-input");
-    const buffer = fs.readFileSync(path.join(__dirname, "./data/2.sav"));
-    await userEvent.upload(importInput, new File([buffer], "2.sav"));
+    const buffer = fs.readFileSync(path.join(__dirname, "./data/1.sav"));
+    await userEvent.upload(importInput, new File([buffer], "1.sav"));
 
     await pause(100);
 
-    expect(screen.getByLabelText("money").getAttribute("value")).toBe("52431");
+    expect(screen.getByLabelText("money").getAttribute("value")).toBe("5058871");
   });
 });

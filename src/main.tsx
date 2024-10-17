@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 
 import { StatsProvider as PalNewStatsProvider } from "@/features/pal-new/stats-provider.tsx";
+import { StatsProvider as PalStatsProvider } from "@/features/pal/stats-provider.tsx";
 import { StatsProvider as Swd2eStatsProvider } from "@/features/swd-2e/stats-provider.tsx";
 import { ThemeProvider } from "@/hooks/theme-provider.tsx";
 import "@/i18n.ts";
@@ -20,7 +21,9 @@ const router = createHashRouter([
       <Suspense fallback={<p>loading...</p>}>
         <Swd2eStatsProvider>
           <PalNewStatsProvider>
-            <Root />
+            <PalStatsProvider>
+              <Root />
+            </PalStatsProvider>
           </PalNewStatsProvider>
         </Swd2eStatsProvider>
       </Suspense>
