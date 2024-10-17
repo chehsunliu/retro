@@ -28,6 +28,7 @@ type AttrKey = (typeof attrKeys)[number];
 
 const addresses = {
   savingCount: 0x0000,
+  huluValue: 0x0018,
   money: 0x0028,
   inventory: 0x06c0,
 };
@@ -68,6 +69,7 @@ type StatsContextType = {
     filename: string;
     bufIn: ArrayBuffer;
     savingCount: number;
+    huluValue: number;
     money: number;
     chars: Record<string, Character>;
     inventory: Record<number, { count: number; used: number }>;
@@ -76,6 +78,7 @@ type StatsContextType = {
   isEditingDisabled(): boolean;
   setBufIn(input: { buf: ArrayBuffer; filename: string }): void;
   setSavingCount(count: number): void;
+  setHuluValue(huluValue: number): void;
   setMoney(money: number): void;
   setAttr(id: string, attr: { key: AttrKey; value: number }): void;
   appendAbility(id: string, value: number): void;
@@ -104,6 +107,7 @@ const initialStats: StatsContextType["stats"] = {
   filename: "",
   bufIn: new ArrayBuffer(0),
   savingCount: 0,
+  huluValue: 0,
   money: 0,
   chars: {
     li: initialCharacter,
@@ -122,6 +126,7 @@ const StatsContext = createContext<StatsContextType>({
   isEditingDisabled: () => true,
   setBufIn: () => {},
   setSavingCount: () => {},
+  setHuluValue: () => {},
   setMoney: () => {},
   setAttr: () => {},
   appendAbility: () => {},
@@ -143,6 +148,9 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     // Money
     bufOut.setUint32(addresses.money, stats.money, true);
 
+    // Hulu value
+    bufOut.setUint16(addresses.huluValue, stats.huluValue, true);
+
     // Character
     Object.entries(stats.chars).forEach(([id, char]) => {
       const addr = characterAddresses[id];
@@ -155,10 +163,10 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
       // Abilities
       const abilityAddr = addr + abilityAddressOffset;
       for (let i = 0; i < 32; i++) {
-        bufOut.setUint16(abilityAddr + i * 6, 0, true);
+        bufOut.setUint16(abilityAddr + i * 12, 0, true);
       }
       for (let i = 0; i < char.abilities.length; i++) {
-        bufOut.setUint16(abilityAddr + i * 6, char.abilities[i], true);
+        bufOut.setUint16(abilityAddr + i * 12, char.abilities[i], true);
       }
     });
 
@@ -206,6 +214,7 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
       filename: input.filename,
       bufIn: bufViewer.buffer,
       savingCount: bufViewer.getUint16(addresses.savingCount, true),
+      huluValue: bufViewer.getUint16(addresses.huluValue, true),
       money: bufViewer.getUint32(addresses.money, true),
       chars: Object.fromEntries(
         characterIds.map((id) => {
@@ -231,6 +240,10 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
 
   const setSavingCount = (count: number) => {
     setStats({ ...stats, savingCount: count });
+  };
+
+  const setHuluValue = (huluValue: number) => {
+    setStats({ ...stats, huluValue });
   };
 
   const setMoney = (money: number) => {
@@ -282,6 +295,7 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
     isEditingDisabled,
     setBufIn,
     setSavingCount,
+    setHuluValue,
     setMoney,
     setAttr,
     appendAbility,
