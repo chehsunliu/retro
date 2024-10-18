@@ -58,7 +58,7 @@ describe("After import", () => {
 
     const importInput = screen.getByTestId("import-input");
     const buffer = fs.readFileSync(path.join(__dirname, "./data/dos/1.RPG"));
-    await userEvent.upload(importInput, new File([buffer], "1.sav"));
+    await userEvent.upload(importInput, new File([buffer], "1.RPG"));
 
     await pause(100);
     expect(screen.getByLabelText("money").getAttribute("value")).toBe("917153");

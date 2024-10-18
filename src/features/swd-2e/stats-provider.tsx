@@ -247,6 +247,10 @@ export function StatsProvider({ children, ...props }: StatsProviderProps) {
   };
 
   const appendAbility = (id: string, value: number) => {
+    if (stats.chars[id].abilities.length >= 50) {
+      return;
+    }
+
     const abilities = [...stats.chars[id].abilities, value];
     setStats({ ...stats, chars: { ...stats.chars, [id]: { ...stats.chars[id], abilities } } });
   };
