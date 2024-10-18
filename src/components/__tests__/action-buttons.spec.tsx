@@ -2,8 +2,8 @@ import { render, cleanup } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { pause } from "@/__tests__/utils.ts";
 import ActionButtons from "@/components/action-buttons.tsx";
-import { pause } from "@/lib/utils.ts";
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
