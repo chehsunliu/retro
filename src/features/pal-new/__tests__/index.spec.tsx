@@ -4,9 +4,9 @@ import * as fs from "node:fs";
 import path from "path";
 import { afterEach, describe, it, vi, expect } from "vitest";
 
+import { pause } from "@/__tests__/utils.ts";
 import { PalNewApp } from "@/features/pal-new";
 import { attrKeys, StatsProvider as PalNewStatsProvider } from "@/features/pal-new/stats-provider.tsx";
-import { pause } from "@/lib/utils.ts";
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -53,7 +53,6 @@ describe("After import", () => {
     await userEvent.upload(importInput, new File([buffer], "1.sav"));
 
     await pause(100);
-
     expect(screen.getByLabelText("money").getAttribute("value")).toBe("5058871");
   });
 });
